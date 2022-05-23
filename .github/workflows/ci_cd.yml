@@ -1,4 +1,4 @@
-name: Bugsby CI/CD pipeline
+name: Bugsby Data Layer CI/CD pipeline
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
           java-version: '16'
           distribution: 'temurin'
 
-      - name: Setup Gradle
+      - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
 
       - name: Grant execute permission for gradlew
