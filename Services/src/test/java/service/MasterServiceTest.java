@@ -640,4 +640,9 @@ class MasterServiceTest {
                 .thenReturn(Optional.empty());
         assertThrows(ProjectNotFoundException.class, () -> service.retrieveDuplicateIssues(ISSUE));
     }
+
+    @Test
+    void failingTest() {
+        assertEquals(1, 2);
+    }
 }
