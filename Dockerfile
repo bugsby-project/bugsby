@@ -16,4 +16,4 @@ RUN mkdir /app
 
 COPY --from=build /buildApp/Server/build/libs/*.jar /app/backend.jar
 
-ENTRYPOINT ["java", "-Dspring.profiles.active=dev", "-jar", "/app/backend.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "/app/backend.jar"]
