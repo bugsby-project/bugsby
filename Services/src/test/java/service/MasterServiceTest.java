@@ -144,7 +144,7 @@ class MasterServiceTest {
                 .thenReturn(Optional.empty());
 
         var testCases = new TestCase[]{
-                new TestCase("Login invalid data", initMocksLoginInvalidData, service, null, null, IllegalArgumentException.class),
+                new TestCase("Login invalid data", initMocksLoginInvalidData, service, null, null, NullPointerException.class),
                 new TestCase("Login successful", initMocksLoginSuccessful, service, USER.getUsername(), USER, null),
                 new TestCase("Login unsuccessful", initMocksLoginUnsuccessful, service, USER.getUsername(), null, UserNotFoundException.class)
         };
