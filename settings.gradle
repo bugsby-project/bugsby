@@ -1,4 +1,4 @@
-rootProject.name = 'issue_tracker'
+rootProject.name = 'bugsby'
 include 'Model'
 include 'Repository'
 include 'Validator'
