@@ -6,11 +6,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collections;
 
-@SpringBootApplication(scanBasePackages = {
-        "com.bugsby.datalayer.filters",
-        "com.bugsby.datalayer.controllers",
-        "com.bugsby.datalayer.security"
-})
+@SpringBootApplication
 public class Main {
     public static void main(String[] args) {
         new ClassPathXmlApplicationContext("classpath:spring.xml");
