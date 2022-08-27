@@ -91,6 +91,7 @@ class InvolvementHbRepositoryTest {
 
     @TestFactory
     @Disabled
+    // TODO delete entire repository.hibernate test suite once task/#11 is completed
     Stream<DynamicTest> delete() {
         record TestCase(String name, Long id, Optional<Involvement> expected, Class<? extends Exception> exception,
                         String errorMessage) {
