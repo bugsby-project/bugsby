@@ -10,6 +10,7 @@ import com.bugsby.datalayer.validator.UserValidator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -89,6 +90,7 @@ class InvolvementHbRepositoryTest {
     }
 
     @TestFactory
+    @Disabled
     Stream<DynamicTest> delete() {
         record TestCase(String name, Long id, Optional<Involvement> expected, Class<? extends Exception> exception,
                         String errorMessage) {
@@ -198,7 +200,7 @@ class InvolvementHbRepositoryTest {
     void findAll() {
         List<Involvement> involvements = StreamSupport
                 .stream(involvementRepo.findAll().spliterator(), false)
-                .collect(Collectors.toList());
+                .toList();
         Assertions.assertEquals(Constants.defaultInvolvements.length, involvements.size());
         Stream.of(Constants.defaultInvolvements).map(involvements::contains).forEach(Assertions::assertTrue);
     }
