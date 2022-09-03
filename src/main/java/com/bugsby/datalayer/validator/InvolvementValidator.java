@@ -1,7 +1,9 @@
 package com.bugsby.datalayer.validator;
 
 import com.bugsby.datalayer.model.Involvement;
+import org.springframework.stereotype.Component;
 
+@Component
 public class InvolvementValidator implements Validator<Long, Involvement> {
     @Override
     public void validate(Involvement entity) {

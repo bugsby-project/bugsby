@@ -1,18 +1,18 @@
 package com.bugsby.datalayer.controllers;
 
 import com.bugsby.datalayer.controllers.dtos.IssueDto;
+import com.bugsby.datalayer.controllers.dtos.requests.AddIssueRequest;
+import com.bugsby.datalayer.controllers.dtos.requests.UpdateIssueRequest;
+import com.bugsby.datalayer.controllers.utils.Utils;
+import com.bugsby.datalayer.model.Issue;
+import com.bugsby.datalayer.model.Status;
+import com.bugsby.datalayer.service.Service;
 import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
 import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
 import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
 import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
-import com.bugsby.datalayer.model.Issue;
-import com.bugsby.datalayer.model.Status;
-import com.bugsby.datalayer.service.Service;
-import com.bugsby.datalayer.controllers.utils.Utils;
-import com.bugsby.datalayer.controllers.dtos.requests.AddIssueRequest;
-import com.bugsby.datalayer.controllers.dtos.requests.UpdateIssueRequest;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -34,12 +34,8 @@ import java.util.stream.Collectors;
 @CrossOrigin
 @RequestMapping(value = "/issues")
 public class IssueController {
-    private final Service service;
-
-    {
-        var context = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        service = context.getBean(Service.class);
-    }
+    @Autowired
+    private Service service;
 
     @PostMapping
     public ResponseEntity<?> addIssue(@RequestBody AddIssueRequest request) {

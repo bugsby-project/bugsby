@@ -1,8 +1,8 @@
 package com.bugsby.datalayer.controllers;
 
-import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.service.Service;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.bugsby.datalayer.service.exceptions.AiServiceException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,11 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @CrossOrigin
 public class AiController {
-    private final Service service;
-
-    {
-        service = new ClassPathXmlApplicationContext("classpath:spring.xml").getBean(Service.class);
-    }
+    @Autowired
+    private Service service;
 
     @GetMapping(value = "/suggested-severity")
     public ResponseEntity<?> getSuggestedSeverity(@RequestParam(value = "title") String title) {

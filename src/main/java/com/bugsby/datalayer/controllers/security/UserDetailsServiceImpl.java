@@ -1,19 +1,22 @@
 package com.bugsby.datalayer.controllers.security;
 
-import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
 import com.bugsby.datalayer.service.Service;
+import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 
+@Component
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final Service service;
     private com.bugsby.datalayer.model.User lastUser;
 
-    public UserDetailsServiceImpl(Service service) {
+    public UserDetailsServiceImpl(@Autowired Service service) {
         this.service = service;
     }
 
