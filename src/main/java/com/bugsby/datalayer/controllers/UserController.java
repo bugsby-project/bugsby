@@ -1,10 +1,10 @@
 package com.bugsby.datalayer.controllers;
 
 import com.bugsby.datalayer.controllers.dtos.UserDto;
-import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
 import com.bugsby.datalayer.model.User;
 import com.bugsby.datalayer.service.Service;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,12 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 @RequestMapping(value = "users")
 public class UserController {
-    private final Service service;
-
-    {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        service = context.getBean(Service.class);
-    }
+    @Autowired
+    private Service service;
 
     /**
      * Handler responsible for creating new accounts

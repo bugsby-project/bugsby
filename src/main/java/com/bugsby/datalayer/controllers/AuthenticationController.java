@@ -11,7 +11,6 @@ import com.bugsby.datalayer.controllers.utils.UriMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,17 +37,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @CrossOrigin
 @RequestMapping("/")
 public class AuthenticationController {
-
     @Autowired
     @Qualifier(BeanIds.AUTHENTICATION_MANAGER)
     private AuthenticationManager authenticationManager;
 
-    private final UserDetailsServiceImpl service;
-
-    {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        service = context.getBean(UserDetailsServiceImpl.class);
-    }
+    @Autowired
+    private UserDetailsServiceImpl service;
 
     @GetMapping(UriMapping.HELLO)
     public ResponseEntity<?> hello() {
@@ -72,13 +66,10 @@ public class AuthenticationController {
 
 @EnableWebSecurity
 class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-    private final UserDetailsServiceImpl userDetailsService;
-
-    {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        userDetailsService = context.getBean(UserDetailsServiceImpl.class);
-    }
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
+    @Autowired
+    private JwtRequestFilter jwtRequestFilter;
 
     @Autowired
     protected void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
@@ -99,7 +90,7 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated().and()
                 .exceptionHandling().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.addFilterBefore(JwtRequestFilter.getInstance(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean(name = BeanIds.AUTHENTICATION_MANAGER)

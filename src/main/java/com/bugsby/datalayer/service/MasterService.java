@@ -1,14 +1,6 @@
 package com.bugsby.datalayer.service;
 
-import com.bugsby.datalayer.service.ai.Predictor;
-import com.bugsby.datalayer.service.exceptions.AiServiceException;
-import com.bugsby.datalayer.service.exceptions.EmailTakenException;
-import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
-import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
-import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
-import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
-import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
-import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
+import com.bugsby.datalayer.controllers.utils.Constants;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
@@ -21,7 +13,16 @@ import com.bugsby.datalayer.repository.InvolvementRepository;
 import com.bugsby.datalayer.repository.IssueRepository;
 import com.bugsby.datalayer.repository.ProjectRepository;
 import com.bugsby.datalayer.repository.UserRepository;
-import com.bugsby.datalayer.controllers.utils.Constants;
+import com.bugsby.datalayer.service.ai.Predictor;
+import com.bugsby.datalayer.service.exceptions.AiServiceException;
+import com.bugsby.datalayer.service.exceptions.EmailTakenException;
+import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
+import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
+import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
+import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
+@org.springframework.stereotype.Service
 public class MasterService implements Service {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
@@ -37,7 +39,11 @@ public class MasterService implements Service {
     private final IssueRepository issueRepository;
     private final Predictor predictor;
 
-    public MasterService(UserRepository userRepository, ProjectRepository projectRepository, InvolvementRepository involvementRepository, IssueRepository issueRepository, Predictor predictor) {
+    public MasterService(@Autowired UserRepository userRepository,
+                         @Autowired ProjectRepository projectRepository,
+                         @Autowired InvolvementRepository involvementRepository,
+                         @Autowired IssueRepository issueRepository,
+                         @Autowired Predictor predictor) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.involvementRepository = involvementRepository;

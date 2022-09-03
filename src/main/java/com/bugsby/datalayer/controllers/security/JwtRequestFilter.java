@@ -1,11 +1,12 @@
 package com.bugsby.datalayer.controllers.security;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -14,23 +15,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+// TODO move to filters package
+@Component
 public class JwtRequestFilter extends OncePerRequestFilter {
-
-    private static final JwtRequestFilter instance = new JwtRequestFilter();
-    private final UserDetailsServiceImpl service;
-
-    {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        service = context.getBean(UserDetailsServiceImpl.class);
-    }
-
-    private JwtRequestFilter() {
-
-    }
-
-    public static JwtRequestFilter getInstance() {
-        return instance;
-    }
+    @Autowired
+    private UserDetailsServiceImpl service;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

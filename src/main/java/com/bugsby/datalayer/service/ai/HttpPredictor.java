@@ -1,14 +1,15 @@
 package com.bugsby.datalayer.service.ai;
 
-import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
 import com.bugsby.datalayer.model.ProfanityLevel;
 import com.bugsby.datalayer.model.Severity;
 import com.bugsby.datalayer.model.SeverityLevel;
 import com.bugsby.datalayer.model.Status;
+import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Properties;
 
+@Component
 public class HttpPredictor implements Predictor {
     private final Properties properties;
     private static final String URL = "ai.url";
@@ -30,6 +32,7 @@ public class HttpPredictor implements Predictor {
     private static final String DUPLICATE_ISSUES = "/duplicate-issues";
     private static final double OFFENSIVE_THRESHOLD = 0.8;
 
+    // todo
     public HttpPredictor(Properties properties) {
         this.properties = properties;
     }

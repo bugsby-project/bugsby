@@ -3,7 +3,7 @@ package com.bugsby.datalayer.controllers;
 import com.bugsby.datalayer.controllers.dtos.ProjectDto;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.service.Service;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,12 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 @RequestMapping(value = "/projects")
 public class ProjectController {
-    private final Service service;
-
-    {
-        var context = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        service = context.getBean(Service.class);
-    }
+    @Autowired
+    private Service service;
 
     @PostMapping
     public ResponseEntity<?> createProject(@RequestBody Project project) {
