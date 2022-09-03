@@ -1,8 +1,8 @@
 package com.bugsby.datalayer.controllers;
 
 import com.bugsby.datalayer.controllers.dtos.UserDto;
-import com.bugsby.datalayer.controllers.security.AuthenticationRequest;
-import com.bugsby.datalayer.controllers.security.AuthenticationResponse;
+import com.bugsby.datalayer.controllers.dtos.requests.AuthenticationRequest;
+import com.bugsby.datalayer.controllers.dtos.requests.AuthenticationResponse;
 import com.bugsby.datalayer.controllers.security.JwtRequestFilter;
 import com.bugsby.datalayer.controllers.security.JwtUtils;
 import com.bugsby.datalayer.controllers.security.SecurityConstants;
@@ -58,12 +58,12 @@ public class AuthenticationController {
     @PostMapping(UriMapping.LOGGING)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest request) {
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(SecurityConstants.AUTHENTICATION_FAILED_MESSAGE, HttpStatus.FORBIDDEN);
         }
 
-        UserDetails userDetails = service.loadUserByUsername(request.getUsername());
+        UserDetails userDetails = service.loadUserByUsername(request.username());
         String jwt = JwtUtils.generateToken(userDetails);
 
         return new ResponseEntity<>(new AuthenticationResponse(jwt, UserDto.from(service.getLastUser())), HttpStatus.OK);
