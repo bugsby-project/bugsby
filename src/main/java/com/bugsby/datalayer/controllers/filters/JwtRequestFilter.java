@@ -1,5 +1,8 @@
-package com.bugsby.datalayer.controllers.security;
+package com.bugsby.datalayer.controllers.filters;
 
+import com.bugsby.datalayer.controllers.security.JwtUtils;
+import com.bugsby.datalayer.controllers.security.SecurityConstants;
+import com.bugsby.datalayer.controllers.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,7 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-// TODO move to filters package
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired

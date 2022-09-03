@@ -32,7 +32,6 @@ public class HttpPredictor implements Predictor {
     private static final String DUPLICATE_ISSUES = "/duplicate-issues";
     private static final double OFFENSIVE_THRESHOLD = 0.8;
 
-    // todo
     public HttpPredictor(@Value("${ai.url}") String url) {
         this.url = url;
     }

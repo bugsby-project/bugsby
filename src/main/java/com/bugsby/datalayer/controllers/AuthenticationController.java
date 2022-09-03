@@ -3,7 +3,7 @@ package com.bugsby.datalayer.controllers;
 import com.bugsby.datalayer.controllers.dtos.UserDto;
 import com.bugsby.datalayer.controllers.dtos.requests.AuthenticationRequest;
 import com.bugsby.datalayer.controllers.dtos.requests.AuthenticationResponse;
-import com.bugsby.datalayer.controllers.security.JwtRequestFilter;
+import com.bugsby.datalayer.controllers.filters.JwtRequestFilter;
 import com.bugsby.datalayer.controllers.security.JwtUtils;
 import com.bugsby.datalayer.controllers.security.SecurityConstants;
 import com.bugsby.datalayer.controllers.security.UserDetailsServiceImpl;
