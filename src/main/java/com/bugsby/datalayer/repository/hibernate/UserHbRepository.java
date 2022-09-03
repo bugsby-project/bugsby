@@ -6,6 +6,9 @@ import com.bugsby.datalayer.validator.Validator;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
 import java.util.List;
@@ -13,8 +16,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+@Repository
 public class UserHbRepository extends AbstractHbRepository<Long, User> implements UserRepository {
-    protected UserHbRepository(Validator<Long, User> validator, String propertiesFile) {
+    protected UserHbRepository(@Autowired Validator<Long, User> validator,
+                               @Value("${properties-file}") String propertiesFile) {
         super(validator, propertiesFile);
     }
 

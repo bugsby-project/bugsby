@@ -6,11 +6,17 @@ import com.bugsby.datalayer.repository.InvolvementRepository;
 import com.bugsby.datalayer.validator.Validator;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
 
+@Repository
 public class InvolvementHbRepository extends AbstractHbRepository<Long, Involvement> implements InvolvementRepository {
-    protected InvolvementHbRepository(Validator<Long, Involvement> validator, String propertiesFile) {
+    @Autowired
+    protected InvolvementHbRepository(@Autowired Validator<Long, Involvement> validator,
+                                      @Value("${properties-file}") String propertiesFile) {
         super(validator, propertiesFile);
     }
 
