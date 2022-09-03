@@ -1,6 +1,6 @@
 package com.bugsby.datalayer.controllers;
 
-import com.bugsby.datalayer.dtos.ProjectDto;
+import com.bugsby.datalayer.controllers.dtos.ProjectDto;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.service.Service;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

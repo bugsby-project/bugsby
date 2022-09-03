@@ -1,14 +1,14 @@
 package com.bugsby.datalayer.service;
 
-import com.bugsby.datalayer.ai.Predictor;
-import com.bugsby.datalayer.exceptions.AiServiceException;
-import com.bugsby.datalayer.exceptions.EmailTakenException;
-import com.bugsby.datalayer.exceptions.IssueNotFoundException;
-import com.bugsby.datalayer.exceptions.ProjectNotFoundException;
-import com.bugsby.datalayer.exceptions.UserAlreadyInProjectException;
-import com.bugsby.datalayer.exceptions.UserNotFoundException;
-import com.bugsby.datalayer.exceptions.UserNotInProjectException;
-import com.bugsby.datalayer.exceptions.UsernameTakenException;
+import com.bugsby.datalayer.service.ai.Predictor;
+import com.bugsby.datalayer.service.exceptions.AiServiceException;
+import com.bugsby.datalayer.service.exceptions.EmailTakenException;
+import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
+import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
+import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
+import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
@@ -21,7 +21,7 @@ import com.bugsby.datalayer.repository.InvolvementRepository;
 import com.bugsby.datalayer.repository.IssueRepository;
 import com.bugsby.datalayer.repository.ProjectRepository;
 import com.bugsby.datalayer.repository.UserRepository;
-import com.bugsby.datalayer.utils.Constants;
+import com.bugsby.datalayer.controllers.utils.Constants;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;

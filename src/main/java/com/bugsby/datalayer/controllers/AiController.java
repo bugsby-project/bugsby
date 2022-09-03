@@ -1,6 +1,6 @@
 package com.bugsby.datalayer.controllers;
 
-import com.bugsby.datalayer.exceptions.AiServiceException;
+import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.service.Service;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.http.HttpStatus;

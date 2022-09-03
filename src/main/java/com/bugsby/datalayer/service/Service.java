@@ -1,13 +1,13 @@
 package com.bugsby.datalayer.service;
 
-import com.bugsby.datalayer.exceptions.AiServiceException;
-import com.bugsby.datalayer.exceptions.EmailTakenException;
-import com.bugsby.datalayer.exceptions.IssueNotFoundException;
-import com.bugsby.datalayer.exceptions.ProjectNotFoundException;
-import com.bugsby.datalayer.exceptions.UserAlreadyInProjectException;
-import com.bugsby.datalayer.exceptions.UserNotFoundException;
-import com.bugsby.datalayer.exceptions.UserNotInProjectException;
-import com.bugsby.datalayer.exceptions.UsernameTakenException;
+import com.bugsby.datalayer.service.exceptions.AiServiceException;
+import com.bugsby.datalayer.service.exceptions.EmailTakenException;
+import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
+import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
+import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
+import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;

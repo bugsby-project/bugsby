@@ -1,13 +1,13 @@
 package com.bugsby.datalayer.controllers;
 
-import com.bugsby.datalayer.dtos.UserDto;
-import com.bugsby.datalayer.security.AuthenticationRequest;
-import com.bugsby.datalayer.security.AuthenticationResponse;
-import com.bugsby.datalayer.security.JwtRequestFilter;
-import com.bugsby.datalayer.security.JwtUtils;
-import com.bugsby.datalayer.security.SecurityConstants;
-import com.bugsby.datalayer.security.UserDetailsServiceImpl;
-import com.bugsby.datalayer.utils.UriMapping;
+import com.bugsby.datalayer.controllers.dtos.UserDto;
+import com.bugsby.datalayer.controllers.security.AuthenticationRequest;
+import com.bugsby.datalayer.controllers.security.AuthenticationResponse;
+import com.bugsby.datalayer.controllers.security.JwtRequestFilter;
+import com.bugsby.datalayer.controllers.security.JwtUtils;
+import com.bugsby.datalayer.controllers.security.SecurityConstants;
+import com.bugsby.datalayer.controllers.security.UserDetailsServiceImpl;
+import com.bugsby.datalayer.controllers.utils.UriMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;

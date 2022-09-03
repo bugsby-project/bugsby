@@ -1,15 +1,15 @@
 package com.bugsby.datalayer.controllers;
 
-import com.bugsby.datalayer.dtos.InvolvementDto;
-import com.bugsby.datalayer.exceptions.ProjectNotFoundException;
-import com.bugsby.datalayer.exceptions.UserAlreadyInProjectException;
-import com.bugsby.datalayer.exceptions.UserNotFoundException;
-import com.bugsby.datalayer.exceptions.UserNotInProjectException;
+import com.bugsby.datalayer.controllers.dtos.InvolvementDto;
+import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
+import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.User;
 import com.bugsby.datalayer.service.Service;
-import com.bugsby.datalayer.utils.requests.AddParticipantRequest;
+import com.bugsby.datalayer.controllers.utils.requests.AddParticipantRequest;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

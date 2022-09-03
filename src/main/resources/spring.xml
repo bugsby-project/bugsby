@@ -43,7 +43,7 @@
             <constructor-arg ref="propertiesFile"/>
         </bean>
 
-        <bean class="com.bugsby.datalayer.ai.HttpPredictor" id="predictor">
+        <bean class="com.bugsby.datalayer.service.ai.HttpPredictor" id="predictor">
             <constructor-arg ref="applicationProperties"/>
         </bean>
 
@@ -55,7 +55,7 @@
             <constructor-arg ref="predictor"/>
         </bean>
 
-        <bean class="com.bugsby.datalayer.security.UserDetailsServiceImpl" id="userDetailsService">
+        <bean class="com.bugsby.datalayer.controllers.security.UserDetailsServiceImpl" id="userDetailsService">
             <constructor-arg ref="service"/>
         </bean>
     </beans>

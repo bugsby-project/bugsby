@@ -1,7 +1,7 @@
 package com.bugsby.datalayer.controllers;
 
-import com.bugsby.datalayer.dtos.UserDto;
-import com.bugsby.datalayer.exceptions.UserNotFoundException;
+import com.bugsby.datalayer.controllers.dtos.UserDto;
+import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
 import com.bugsby.datalayer.model.User;
 import com.bugsby.datalayer.service.Service;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

@@ -1,17 +1,17 @@
 package com.bugsby.datalayer.controllers;
 
-import com.bugsby.datalayer.dtos.IssueDto;
-import com.bugsby.datalayer.exceptions.AiServiceException;
-import com.bugsby.datalayer.exceptions.IssueNotFoundException;
-import com.bugsby.datalayer.exceptions.ProjectNotFoundException;
-import com.bugsby.datalayer.exceptions.UserNotFoundException;
-import com.bugsby.datalayer.exceptions.UserNotInProjectException;
+import com.bugsby.datalayer.controllers.dtos.IssueDto;
+import com.bugsby.datalayer.service.exceptions.AiServiceException;
+import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
+import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.Status;
 import com.bugsby.datalayer.service.Service;
-import com.bugsby.datalayer.utils.Utils;
-import com.bugsby.datalayer.utils.requests.AddIssueRequest;
-import com.bugsby.datalayer.utils.requests.UpdateIssueRequest;
+import com.bugsby.datalayer.controllers.utils.Utils;
+import com.bugsby.datalayer.controllers.utils.requests.AddIssueRequest;
+import com.bugsby.datalayer.controllers.utils.requests.UpdateIssueRequest;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
