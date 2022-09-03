@@ -1,4 +1,4 @@
-package com.bugsby.datalayer.controllers.utils.requests;
+package com.bugsby.datalayer.controllers.dtos.requests;
 
 import com.bugsby.datalayer.model.Role;
 

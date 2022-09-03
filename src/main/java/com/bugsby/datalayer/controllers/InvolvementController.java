@@ -9,7 +9,7 @@ import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.User;
 import com.bugsby.datalayer.service.Service;
-import com.bugsby.datalayer.controllers.utils.requests.AddParticipantRequest;
+import com.bugsby.datalayer.controllers.dtos.requests.AddParticipantRequest;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

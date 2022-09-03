@@ -1,12 +1,13 @@
-package com.bugsby.datalayer.controllers.utils.requests;
+package com.bugsby.datalayer.controllers.dtos.requests;
 
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.Severity;
+import com.bugsby.datalayer.model.Status;
 import com.bugsby.datalayer.model.User;
 
-public class AddIssueRequest {
+public class UpdateIssueRequest {
     private String title;
     private String description;
     private String expectedBehaviour;
@@ -14,11 +15,12 @@ public class AddIssueRequest {
     private String stackTrace;
     private Severity severity;
     private IssueType type;
+    private Status status;
     private Long projectId;
     private Long reporterId;
     private Long assigneeId;
 
-    public AddIssueRequest() {
+    public UpdateIssueRequest() {
     }
 
     public String getTitle() {
@@ -101,12 +103,37 @@ public class AddIssueRequest {
         this.assigneeId = assigneeId;
     }
 
+    @Override
+    public String toString() {
+        return "UpdateIssueRequest{" +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", expectedBehaviour='" + expectedBehaviour + '\'' +
+                ", actualBehaviour='" + actualBehaviour + '\'' +
+                ", stackTrace='" + stackTrace + '\'' +
+                ", severity=" + severity +
+                ", type=" + type +
+                ", status=" + status +
+                ", projectId=" + projectId +
+                ", reporterId=" + reporterId +
+                ", assigneeId=" + assigneeId +
+                '}';
+    }
+
     public Issue toIssue() {
-        Issue result = new Issue(title, description, expectedBehaviour, actualBehaviour, stackTrace, severity, null, type, new Project(projectId), new User(reporterId));
+        Issue result = new Issue(title, description, expectedBehaviour, actualBehaviour, stackTrace, severity, status, type, new Project(projectId), new User(reporterId));
         if (assigneeId != null) {
             result.setAssignee(new User(assigneeId));
         }
 
         return result;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 }
