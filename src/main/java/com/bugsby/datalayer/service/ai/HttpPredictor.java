@@ -9,6 +9,7 @@ import com.bugsby.datalayer.model.Status;
 import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -24,8 +25,7 @@ import java.util.Properties;
 
 @Component
 public class HttpPredictor implements Predictor {
-    private final Properties properties;
-    private static final String URL = "ai.url";
+    private final String url;
     private static final String SUGGESTED_SEVERITY = "/suggested-severity?title=:title";
     private static final String SUGGESTED_TYPE = "/suggested-type?title=:title";
     private static final String IS_OFFENSIVE = "/is-offensive?text=:text";
@@ -33,14 +33,14 @@ public class HttpPredictor implements Predictor {
     private static final double OFFENSIVE_THRESHOLD = 0.8;
 
     // todo
-    public HttpPredictor(Properties properties) {
-        this.properties = properties;
+    public HttpPredictor(@Value("${ai.url}") String url) {
+        this.url = url;
     }
 
     @Override
     public SeverityLevel predictSeverityLevel(String title) throws AiServiceException {
         String titleEncoded = URLEncoder.encode(title, StandardCharsets.UTF_8);
-        String urlString = properties.getProperty(URL) + SUGGESTED_SEVERITY;
+        String urlString = url + SUGGESTED_SEVERITY;
         urlString = urlString.replaceAll(":title", titleEncoded);
         String response = doHttpCall(urlString);
         return SeverityLevel.valueOf(response.toUpperCase());
@@ -49,7 +49,7 @@ public class HttpPredictor implements Predictor {
     @Override
     public IssueType predictIssueType(String title) throws AiServiceException {
         String titleEncoded = URLEncoder.encode(title, StandardCharsets.UTF_8);
-        String urlString = properties.getProperty(URL) + SUGGESTED_TYPE;
+        String urlString = url + SUGGESTED_TYPE;
         urlString = urlString.replaceAll(":title", titleEncoded);
         String response = doHttpCall(urlString);
         return IssueType.valueOf(response);
@@ -58,7 +58,7 @@ public class HttpPredictor implements Predictor {
     @Override
     public ProfanityLevel predictProfanityLevel(String text) throws AiServiceException {
         String textEncoded = URLEncoder.encode(text, StandardCharsets.UTF_8);
-        String urlString = properties.getProperty(URL) + IS_OFFENSIVE;
+        String urlString = url + IS_OFFENSIVE;
         urlString = urlString.replaceAll(":text", textEncoded);
         double probability = Double.parseDouble(doHttpCall(urlString));
         if (probability < OFFENSIVE_THRESHOLD) {
@@ -69,7 +69,7 @@ public class HttpPredictor implements Predictor {
 
     @Override
     public List<Issue> detectDuplicateIssues(List<Issue> projectIssues, Issue issue) throws AiServiceException {
-        String urlString = properties.getProperty(URL) + DUPLICATE_ISSUES;
+        String urlString = url + DUPLICATE_ISSUES;
         DuplicateIssuesRequest requestData = new DuplicateIssuesRequest(projectIssues.stream()
                 .map(IssueDto::from)
                 .toList(),
