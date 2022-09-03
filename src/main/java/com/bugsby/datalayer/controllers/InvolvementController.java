@@ -52,10 +52,10 @@ public class InvolvementController {
     @PostMapping
     public ResponseEntity<?> addParticipant(@RequestBody AddParticipantRequest request) {
         try {
-            Project project = new Project(request.getProjectId());
-            User participant = new User(request.getUsername());
-            User requester = new User(request.getRequesterId());
-            Involvement involvement = new Involvement(request.getRole(), participant, project);
+            Project project = new Project(request.projectId());
+            User participant = new User(request.username());
+            User requester = new User(request.requesterId());
+            Involvement involvement = new Involvement(request.role(), participant, project);
 
             Involvement result = service.addParticipant(involvement, requester);
             if (result == null) {  // operation has failed
