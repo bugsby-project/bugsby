@@ -1,7 +1,9 @@
 package com.bugsby.datalayer.validator;
 
 import com.bugsby.datalayer.model.Issue;
+import org.springframework.stereotype.Component;
 
+@Component
 public class IssueValidator implements Validator<Long, Issue> {
     @Override
     public void validate(Issue entity) {
