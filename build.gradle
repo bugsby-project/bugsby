@@ -33,8 +33,6 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.0'
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.19'
-    // https://mvnrepository.com/artifact/org.hibernate/hibernate-core
-    implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.30.Final'
     // https://mvnrepository.com/artifact/com.h2database/h2
     testImplementation group: 'com.h2database', name: 'h2', version: '1.4.200'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
@@ -65,6 +63,8 @@ dependencies {
     implementation group: 'org.springframework.security', name: 'spring-security-web', version: '5.5.3'
     // https://mvnrepository.com/artifact/org.springframework.security/spring-security-core
     implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.5.3'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.7.3'
 }
 
 test {
