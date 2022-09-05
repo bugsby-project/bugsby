@@ -3,24 +3,55 @@ package com.bugsby.datalayer.model;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.util.Objects;
 
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id"
 )
+@javax.persistence.Entity
+@Table(name = "issues")
 public class Issue implements Entity<Long>, Cloneable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
+    @Column(name = "title")
     private String title;
+    @Column(name = "description")
     private String description;
+    @Column(name = "expected_behaviour")
     private String expectedBehaviour;
+    @Column(name = "actual_behaviour")
     private String actualBehaviour;
+    @Column(name = "stack_trace")
     private String stackTrace;
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "severity")
     private Severity severity;
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "status")
     private Status status;
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "type")
     private IssueType type;
+    @ManyToOne
+    @JoinColumn(name = "project_id")
     private Project project;
+    @ManyToOne
+    @JoinColumn(name = "reporter_id")
     private User reporter;
+    @ManyToOne
+    @JoinColumn(name = "assignee_id")
     private User assignee;
 
     public Issue() {
