@@ -1,14 +1,5 @@
 package com.bugsby.datalayer.service;
 
-import com.bugsby.datalayer.service.ai.Predictor;
-import com.bugsby.datalayer.service.exceptions.AiServiceException;
-import com.bugsby.datalayer.service.exceptions.EmailTakenException;
-import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
-import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
-import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
-import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
-import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
-import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
@@ -23,16 +14,23 @@ import com.bugsby.datalayer.repository.InvolvementRepository;
 import com.bugsby.datalayer.repository.IssueRepository;
 import com.bugsby.datalayer.repository.ProjectRepository;
 import com.bugsby.datalayer.repository.UserRepository;
+import com.bugsby.datalayer.service.ai.Predictor;
+import com.bugsby.datalayer.service.exceptions.AiServiceException;
+import com.bugsby.datalayer.service.exceptions.EmailTakenException;
+import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
+import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
+import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
+import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
+import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -47,6 +45,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MasterServiceTest {
@@ -101,12 +102,12 @@ class MasterServiceTest {
 
         Runnable initMocksCreateAccountSuccessful = () -> {
         };
-        Runnable initMocksCreateAccountDuplicateUsername = () -> Mockito.when(userRepository.findUserByUsername(USER.getUsername()))
+        Runnable initMocksCreateAccountDuplicateUsername = () -> when(userRepository.findByUsername(USER.getUsername()))
                 .thenReturn(Optional.of(USER));
         Runnable initMocksCreateAccountDuplicateEmail = () -> {
-            Mockito.when(userRepository.findUserByUsername(ArgumentMatchers.any(String.class)))
+            when(userRepository.findByUsername(any(String.class)))
                     .thenReturn(Optional.empty());
-            Mockito.when(userRepository.findUserByEmail(USER.getEmail()))
+            when(userRepository.findByEmail(USER.getEmail()))
                     .thenReturn(Optional.of(USER));
         };
 
@@ -136,11 +137,11 @@ class MasterServiceTest {
             }
         }
 
-        Runnable initMocksLoginInvalidData = () -> Mockito.when(userRepository.findUserByUsername(null))
+        Runnable initMocksLoginInvalidData = () -> when(userRepository.findByUsername(null))
                 .thenThrow(IllegalArgumentException.class);
-        Runnable initMocksLoginSuccessful = () -> Mockito.when(userRepository.findUserByUsername(USER.getUsername()))
+        Runnable initMocksLoginSuccessful = () -> when(userRepository.findByUsername(USER.getUsername()))
                 .thenReturn(Optional.of(USER));
-        Runnable initMocksLoginUnsuccessful = () -> Mockito.when(userRepository.findUserByUsername(USER.getUsername()))
+        Runnable initMocksLoginUnsuccessful = () -> when(userRepository.findByUsername(USER.getUsername()))
                 .thenReturn(Optional.empty());
 
         var testCases = new TestCase[]{
@@ -169,8 +170,8 @@ class MasterServiceTest {
             }
         }
 
-        Runnable initMocksCreateProjectSuccessfully = () -> Mockito.when(projectRepository.save(PROJECT))
-                .thenReturn(Optional.empty());
+        Runnable initMocksCreateProjectSuccessfully = () -> when(projectRepository.save(PROJECT))
+                .thenReturn(PROJECT);
 
         var testCases = new TestCase[]{
                 new TestCase("Create project successfully", initMocksCreateProjectSuccessfully, service, PROJECT, PROJECT, null)
@@ -196,9 +197,9 @@ class MasterServiceTest {
             }
         }
 
-        Runnable initMocksGetProjectNonExistentId = () -> Mockito.when(projectRepository.find(ArgumentMatchers.any(Long.class)))
+        Runnable initMocksGetProjectNonExistentId = () -> when(projectRepository.findById(any(Long.class)))
                 .thenReturn(Optional.empty());
-        Runnable initMocksGetProjectSuccessfully = () -> Mockito.when(projectRepository.find(PROJECT.getId()))
+        Runnable initMocksGetProjectSuccessfully = () -> when(projectRepository.findById(PROJECT.getId()))
                 .thenReturn(Optional.of(PROJECT));
 
         var testCases = new TestCase[]{
@@ -227,16 +228,16 @@ class MasterServiceTest {
             }
         }
 
-        Runnable initMocksGetInvolvementsWrongUser = () -> Mockito.when(userRepository.findUserByUsername(ArgumentMatchers.any(String.class)))
+        Runnable initMocksGetInvolvementsWrongUser = () -> when(userRepository.findByUsername(any(String.class)))
                 .thenReturn(Optional.empty());
         Runnable initMocksGetInvolvementsEmpty = () -> {
             USER.setInvolvements(Collections.emptySet());
-            Mockito.when(userRepository.findUserByUsername(ArgumentMatchers.any(String.class)))
+            when(userRepository.findByUsername(any(String.class)))
                     .thenReturn(Optional.of(USER));
         };
         Runnable initMocksGetInvolvements = () -> {
             USER.setInvolvements(Set.of(INVOLVEMENT));
-            Mockito.when(userRepository.findUserByUsername(ArgumentMatchers.any(String.class)))
+            when(userRepository.findByUsername(any(String.class)))
                     .thenReturn(Optional.of(USER));
         };
 
@@ -270,25 +271,25 @@ class MasterServiceTest {
         Involvement involvementToAdd = new Involvement(Role.UX_DESIGNER, USER, PROJECT);
         User userNonExistent = new User(Long.MAX_VALUE);
 
-        Runnable initMocksAddParticipantNonExistentRequester = () -> Mockito.when(userRepository.find(ArgumentMatchers.any(Long.class)))
+        Runnable initMocksAddParticipantNonExistentRequester = () -> when(userRepository.findById(any(Long.class)))
                 .thenReturn(Optional.empty());
 
         Runnable initMocksAddParticipantWrongRequester = () -> {
-            Mockito.when(userRepository.find(ArgumentMatchers.any(Long.class)))
+            when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(USER));
-            Mockito.when(projectRepository.find(ArgumentMatchers.any(Long.class)))
+            when(projectRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(PROJECT));
         };
 
-        Runnable initMocksAddParticipantNonExistentUser = () -> Mockito.when(userRepository.find(userNonExistent.getId()))
+        Runnable initMocksAddParticipantNonExistentUser = () -> when(userRepository.findById(userNonExistent.getId()))
                 .thenReturn(Optional.empty());
 
         Runnable initMocksAddParticipantAlreadyAdded = () -> {
-            Mockito.when(userRepository.find(ArgumentMatchers.any(Long.class)))
+            when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(USER));
-            Mockito.when(userRepository.findUserByUsername(ArgumentMatchers.any(String.class)))
+            when(userRepository.findByUsername(any(String.class)))
                     .thenReturn(Optional.of(USER));
-            Mockito.when(projectRepository.find(ArgumentMatchers.any(Long.class)))
+            when(projectRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(PROJECT));
         };
 
@@ -342,10 +343,10 @@ class MasterServiceTest {
             }
         }
 
-        Runnable initMocksGetAllUsernamesEmpty = () -> Mockito.when(userRepository.getAllUsernames())
-                .thenReturn(Collections.emptySet());
-        Runnable initMocksGetAllUsernames = () -> Mockito.when(userRepository.getAllUsernames())
-                .thenReturn(Set.of(USER.getUsername()));
+        Runnable initMocksGetAllUsernamesEmpty = () -> when(userRepository.getUsernames())
+                .thenReturn(Collections.emptyList());
+        Runnable initMocksGetAllUsernames = () -> when(userRepository.getUsernames())
+                .thenReturn(List.of(USER.getUsername()));
 
         var testCases = new TestCase[]{
                 new TestCase("Get all usernames empty result", initMocksGetAllUsernamesEmpty, service, Collections.emptyList()),
@@ -374,31 +375,31 @@ class MasterServiceTest {
 
         Runnable initMocksNonExistentReporter = () -> {
             try {
-                Mockito.when(predictor.predictProfanityLevel(ArgumentMatchers.any(String.class)))
+                when(predictor.predictProfanityLevel(any(String.class)))
                         .thenReturn(ProfanityLevel.NOT_OFFENSIVE);
             } catch (AiServiceException e) {
                 e.printStackTrace();
             }
-            Mockito.when(userRepository.find(ArgumentMatchers.any(Long.class)))
+            when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.empty());
         };
 
         Runnable initMocksAddIssueSuccessfully = () -> {
             try {
-                Mockito.when(predictor.predictProfanityLevel(ArgumentMatchers.any(String.class)))
+                when(predictor.predictProfanityLevel(any(String.class)))
                         .thenReturn(ProfanityLevel.NOT_OFFENSIVE);
             } catch (AiServiceException e) {
                 e.printStackTrace();
             }
-            Mockito.when(userRepository.find(ArgumentMatchers.any(Long.class)))
+            when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(USER));
-            Mockito.when(issueRepository.save(ArgumentMatchers.any(Issue.class)))
-                    .thenReturn(Optional.empty());
+            when(issueRepository.save(any(Issue.class)))
+                    .thenAnswer(i -> i.getArgument(0));
         };
 
         Runnable initMocksOffensiveContent = () -> {
             try {
-                Mockito.when(predictor.predictProfanityLevel(ArgumentMatchers.any(String.class)))
+                when(predictor.predictProfanityLevel(any(String.class)))
                         .thenReturn(ProfanityLevel.OFFENSIVE);
             } catch (AiServiceException e) {
                 e.printStackTrace();
@@ -407,24 +408,24 @@ class MasterServiceTest {
 
         Runnable initMocksNonExistentAssignee = () -> {
             try {
-                Mockito.when(predictor.predictProfanityLevel(ArgumentMatchers.any(String.class)))
+                when(predictor.predictProfanityLevel(any(String.class)))
                         .thenReturn(ProfanityLevel.NOT_OFFENSIVE);
             } catch (AiServiceException e) {
                 e.printStackTrace();
             }
             ISSUE.setAssignee(new User(Long.MAX_VALUE));
-            Mockito.when(userRepository.find(ArgumentMatchers.any(Long.class)))
+            when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.empty());
         };
 
         Runnable initMocksAssigneeNotInProject = () -> {
             try {
-                Mockito.when(predictor.predictProfanityLevel(ArgumentMatchers.any(String.class)))
+                when(predictor.predictProfanityLevel(any(String.class)))
                         .thenReturn(ProfanityLevel.NOT_OFFENSIVE);
             } catch (AiServiceException e) {
                 e.printStackTrace();
             }
-            Mockito.when(userRepository.find(ArgumentMatchers.any(Long.class)))
+            when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(USER));
             ISSUE.setAssignee(USER);
             USER.setInvolvements(Collections.emptySet());
@@ -459,9 +460,9 @@ class MasterServiceTest {
             }
         }
 
-        Runnable initMocksNonExistentUser = () -> Mockito.when(userRepository.findUserByUsername(ArgumentMatchers.any(String.class)))
+        Runnable initMocksNonExistentUser = () -> when(userRepository.findByUsername(any(String.class)))
                 .thenReturn(Optional.empty());
-        Runnable initMocksDefault = () -> Mockito.when(userRepository.findUserByUsername(ArgumentMatchers.any(String.class)))
+        Runnable initMocksDefault = () -> when(userRepository.findByUsername(any(String.class)))
                 .thenReturn(Optional.of(USER));
 
         var testCases = new TestCase[]{
@@ -482,9 +483,9 @@ class MasterServiceTest {
             }
         }
 
-        Runnable initMocksIdNonExistent = () -> Mockito.when(issueRepository.find(ArgumentMatchers.any(Long.class)))
+        Runnable initMocksIdNonExistent = () -> when(issueRepository.findById(any(Long.class)))
                 .thenReturn(Optional.empty());
-        Runnable initMocksSuccessfully = () -> Mockito.when(issueRepository.find(ArgumentMatchers.any(Long.class)))
+        Runnable initMocksSuccessfully = () -> when(issueRepository.findById(any(Long.class)))
                 .thenReturn(Optional.of(ISSUE));
 
         var testCases = new TestCase[]{
@@ -513,15 +514,14 @@ class MasterServiceTest {
             }
         }
 
-        Runnable initMocksIssueDoesNotExist = () -> Mockito.when(issueRepository.find(ArgumentMatchers.any(Long.class)))
+        Runnable initMocksIssueDoesNotExist = () -> when(issueRepository.findById(any(Long.class)))
                 .thenReturn(Optional.empty());
-        Runnable initMocksRequesterNotParticipant = () -> Mockito.when(issueRepository.find(ArgumentMatchers.any(Long.class)))
+        Runnable initMocksRequesterNotParticipant = () -> when(issueRepository.findById(any(Long.class)))
                 .thenReturn(Optional.of(ISSUE));
         Runnable initMocksSuccessfully = () -> {
-            Mockito.when(issueRepository.find(ArgumentMatchers.any(Long.class)))
+            when(issueRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(ISSUE));
-            Mockito.when(issueRepository.delete(ArgumentMatchers.any(Long.class)))
-                    .thenReturn(Optional.of(ISSUE));
+            doNothing().when(issueRepository).deleteById(any(Long.class));
         };
 
         var testCases = new TestCase[]{
@@ -553,17 +553,17 @@ class MasterServiceTest {
 
         Runnable noMocksNeeded = () -> {
         };
-        Runnable initMocksIssueNotFound = () -> Mockito.when(issueRepository.find(ArgumentMatchers.any(Long.class)))
+        Runnable initMocksIssueNotFound = () -> when(issueRepository.findById(any(Long.class)))
                 .thenReturn(Optional.empty());
         Runnable initMocksUserNotInProject = () -> {
-            Mockito.when(issueRepository.find(ArgumentMatchers.any(Long.class)))
+            when(issueRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(ISSUE));
         };
         Runnable initMocksSuccessfully = () -> {
-            Mockito.when(issueRepository.find(ArgumentMatchers.any(Long.class)))
+            when(issueRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(ISSUE));
-            Mockito.when(issueRepository.update(ArgumentMatchers.any(Issue.class)))
-                    .thenReturn(Optional.empty());
+            when(issueRepository.save(any(Issue.class)))
+                    .thenAnswer(i -> i.getArgument(0));
         };
 
         var testCases = new TestCase[]{
@@ -580,7 +580,7 @@ class MasterServiceTest {
     @Test
     void predictSeverityLevel() {
         try {
-            Mockito.when(predictor.predictSeverityLevel(ArgumentMatchers.any(String.class)))
+            when(predictor.predictSeverityLevel(any(String.class)))
                     .thenReturn(SeverityLevel.SEVERE);
             assertEquals(SeverityLevel.SEVERE, service.predictSeverityLevel("The database is lost"));
         } catch (AiServiceException e) {
@@ -591,7 +591,7 @@ class MasterServiceTest {
     @Test
     void predictSeverityLevel_throwsError() {
         try {
-            Mockito.when(predictor.predictSeverityLevel(ArgumentMatchers.any(String.class)))
+            when(predictor.predictSeverityLevel(any(String.class)))
                     .thenThrow(AiServiceException.class);
             assertThrows(AiServiceException.class, () -> service.predictSeverityLevel(""));
         } catch (AiServiceException e) {
@@ -602,7 +602,7 @@ class MasterServiceTest {
     @Test
     void predictIssueType() {
         try {
-            Mockito.when(predictor.predictIssueType(ArgumentMatchers.any(String.class)))
+            when(predictor.predictIssueType(any(String.class)))
                     .thenReturn(IssueType.BUG);
             assertEquals(IssueType.BUG, service.predictIssueType("this doesn't work"));
         } catch (AiServiceException e) {
@@ -613,7 +613,7 @@ class MasterServiceTest {
     @Test
     void predictIssueType_throwsError() {
         try {
-            Mockito.when(predictor.predictIssueType(ArgumentMatchers.any(String.class)))
+            when(predictor.predictIssueType(any(String.class)))
                     .thenThrow(AiServiceException.class);
             assertThrows(AiServiceException.class, () -> service.predictIssueType("this doesn't work"));
         } catch (AiServiceException e) {
@@ -623,10 +623,10 @@ class MasterServiceTest {
 
     @Test
     void retrieveDuplicateIssues() {
-        Mockito.when(projectRepository.find(ArgumentMatchers.any(Long.class)))
+        when(projectRepository.findById(any(Long.class)))
                 .thenReturn(Optional.of(PROJECT));
         try {
-            Mockito.when(predictor.detectDuplicateIssues(ArgumentMatchers.any(List.class), ArgumentMatchers.any(Issue.class)))
+            when(predictor.detectDuplicateIssues(any(List.class), any(Issue.class)))
                     .thenReturn(List.of(ISSUE));
             assertEquals(List.of(ISSUE), service.retrieveDuplicateIssues(ISSUE));
         } catch (AiServiceException | ProjectNotFoundException e) {
@@ -636,7 +636,7 @@ class MasterServiceTest {
 
     @Test
     void retrieveDuplicateIssues_projectDoesNotExist() {
-        Mockito.when(projectRepository.find(ArgumentMatchers.any(Long.class)))
+        when(projectRepository.findById(any(Long.class)))
                 .thenReturn(Optional.empty());
         assertThrows(ProjectNotFoundException.class, () -> service.retrieveDuplicateIssues(ISSUE));
     }

@@ -32,6 +32,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.List;
 
 @Controller
 @CrossOrigin
@@ -83,7 +86,13 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable()
+        CorsConfiguration configuration = new CorsConfiguration().applyPermitDefaultValues();
+        configuration.setAllowedMethods(List.of("*"));
+        configuration.addAllowedOrigin("*");
+
+        http.cors()
+                .configurationSource(request -> configuration)
+                .and().csrf().disable()
                 .authorizeRequests()
                 .antMatchers(UriMapping.CREATE_ACCOUNT, UriMapping.LOGGING)
                 .permitAll()

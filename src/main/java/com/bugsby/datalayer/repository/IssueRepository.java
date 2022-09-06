@@ -2,14 +2,16 @@ package com.bugsby.datalayer.repository;
 
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.User;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface IssueRepository extends Repository<Long, Issue> {
+import java.util.List;
+
+public interface IssueRepository extends PagingAndSortingRepository<Issue, Long> {
     /**
      * Method for retrieving the assigned issues of a particular user, ordered by status in descending order
      *
      * @param user, the {@code User} to retrieve the assigned issues from
-     * @return an {@code Iterable} containing the {@param user}'s assigned issues
-     * @throws IllegalArgumentException is user is null
+     * @return a {@code List} containing the {@param user}'s assigned issues
      */
-    Iterable<Issue> getAssignedIssues(User user);
+    List<Issue> findByAssigneeOrderByStatusDesc(User user);
 }
