@@ -23,13 +23,13 @@ import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
 import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
 import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
 @org.springframework.stereotype.Service
 public class MasterService implements Service {
@@ -52,6 +52,7 @@ public class MasterService implements Service {
     }
 
     @Override
+    @Transactional
     public User createAccount(User user) throws UsernameTakenException, EmailTakenException {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new UsernameTakenException(Constants.USERNAME_TAKEN_ERROR_MESSAGE);
@@ -65,6 +66,7 @@ public class MasterService implements Service {
     }
 
     @Override
+    @Transactional
     public User login(String username) throws UserNotFoundException {
         Optional<User> result = userRepository.findByUsername(username);
         if (result.isEmpty()) {
@@ -74,17 +76,22 @@ public class MasterService implements Service {
     }
 
     @Override
+    @Transactional
     public Project createProject(Project project) {
         project.setCreatedAt(LocalDateTime.now());
+        project.getInvolvements()
+                .forEach(involvement -> involvement.setProject(project));
         return projectRepository.save(project);
     }
 
     @Override
+    @Transactional
     public Project getProjectById(long id) {
         return projectRepository.findById(id).orElse(null);
     }
 
     @Override
+    @Transactional
     public Set<Involvement> getInvolvementsByUsername(String username) throws UserNotFoundException {
         Optional<User> user = userRepository.findByUsername(username);
         if (user.isEmpty()) {  // the user does not exist
@@ -95,6 +102,7 @@ public class MasterService implements Service {
     }
 
     @Override
+    @Transactional
     public Involvement addParticipant(Involvement involvement, User requester) throws UserNotInProjectException, UserNotFoundException, ProjectNotFoundException, UserAlreadyInProjectException {
         // verify if the users are valid
         Optional<User> userRequester = userRepository.findById(requester.getId());
@@ -136,11 +144,13 @@ public class MasterService implements Service {
     }
 
     @Override
+    @Transactional
     public List<String> getAllUsernames() {
         return userRepository.getUsernames();
     }
 
     @Override
+    @Transactional
     public Issue addIssue(Issue issue) throws UserNotInProjectException, UserNotFoundException, AiServiceException {
         checkOffensiveLanguage(issue);
         Optional<User> reporter = userRepository.findById(issue.getReporter().getId());
@@ -168,6 +178,7 @@ public class MasterService implements Service {
     }
 
     @Override
+    @Transactional
     public List<Issue> getAssignedIssues(String username) throws UserNotFoundException {
         Optional<User> user = userRepository.findByUsername(username);
         if (user.isEmpty()) {
@@ -181,11 +192,13 @@ public class MasterService implements Service {
     }
 
     @Override
+    @Transactional
     public Issue getIssueById(long id) {
         return issueRepository.findById(id).orElse(null);
     }
 
     @Override
+    @Transactional
     public Issue deleteIssue(long id, String requesterUsername) throws IssueNotFoundException, UserNotInProjectException {
         Optional<Issue> issue = issueRepository.findById(id);
         if (issue.isEmpty()) {
@@ -196,11 +209,19 @@ public class MasterService implements Service {
             throw new UserNotInProjectException("The requester is not part of the project");
         }
 
+        // removing detached entities
+        issue.get().getProject()
+                .getIssues()
+                .removeIf(issue1 -> issue1.equals(issue.get()));
+        issue.get().getAssignee()
+                .getAssignedIssues()
+                .removeIf(issue1 -> issue1.equals(issue.get()));
         issueRepository.deleteById(id);
         return issue.get();
     }
 
     @Override
+    @Transactional
     public Issue updateIssue(Issue issue, String requesterUsername) throws IllegalArgumentException, UserNotInProjectException, IssueNotFoundException {
         if (issue == null || requesterUsername == null) {
             throw new IllegalArgumentException();
@@ -219,16 +240,19 @@ public class MasterService implements Service {
     }
 
     @Override
+    @Transactional
     public SeverityLevel predictSeverityLevel(String title) throws AiServiceException {
         return predictor.predictSeverityLevel(title);
     }
 
     @Override
+    @Transactional
     public IssueType predictIssueType(String title) throws AiServiceException {
         return predictor.predictIssueType(title);
     }
 
     @Override
+    @Transactional
     public List<Issue> retrieveDuplicateIssues(Issue issue) throws ProjectNotFoundException, AiServiceException {
         List<Issue> projectIssues = projectRepository.findById(issue.getProject().getId())
                 .orElseThrow(() -> new ProjectNotFoundException("Project with id " + issue.getProject().getId() + " does not exist"))
