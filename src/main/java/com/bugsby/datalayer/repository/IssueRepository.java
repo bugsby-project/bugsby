@@ -11,7 +11,7 @@ public interface IssueRepository extends PagingAndSortingRepository<Issue, Long>
      * Method for retrieving the assigned issues of a particular user, ordered by status in descending order
      *
      * @param user, the {@code User} to retrieve the assigned issues from
-     * @return an {@code Iterable} containing the {@param user}'s assigned issues
+     * @return a {@code List} containing the {@param user}'s assigned issues
      */
     List<Issue> findByAssigneeOrderByStatusDesc(User user);
 }

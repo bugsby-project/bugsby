@@ -12,7 +12,7 @@ public interface InvolvementRepository extends PagingAndSortingRepository<Involv
      * Method for obtaining the involvements of a certain user
      *
      * @param user, the user to retrieve their involvements in projects
-     * @return an {@code Iterable} of involvements
+     * @return a {@code List} of involvements
      */
     List<Involvement> findByUser(User user);
 }
