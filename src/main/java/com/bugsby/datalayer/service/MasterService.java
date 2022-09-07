@@ -211,7 +211,7 @@ public class MasterService implements Service {
                 // check if the requester is part of the project
                 .map(issue1 -> Optional.of(isParticipantInProject(issue1, requesterUsername))
                         .filter(Boolean::booleanValue)
-                        .map(aBoolean -> issue1)
+                        .map(aBoolean -> issue)
                         .orElseThrow(() -> new UserNotInProjectException("The requester is not part of the project")))
                 .map(issueRepository::save)
                 .orElseThrow(() -> new IssueNotFoundException(Constants.ISSUE_DOES_NOT_EXIST_ERROR_MESSAGE));
