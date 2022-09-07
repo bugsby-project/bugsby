@@ -5,7 +5,6 @@ import com.bugsby.datalayer.controllers.dtos.requests.AddIssueRequest;
 import com.bugsby.datalayer.controllers.dtos.requests.UpdateIssueRequest;
 import com.bugsby.datalayer.controllers.utils.Utils;
 import com.bugsby.datalayer.model.Issue;
-import com.bugsby.datalayer.model.Status;
 import com.bugsby.datalayer.service.Service;
 import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
@@ -28,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RestController
@@ -36,11 +36,13 @@ import java.util.stream.Collectors;
 public class IssueController {
     @Autowired
     private Service service;
+    @Autowired
+    private Function<AddIssueRequest, Issue> addIssueRequestMapper;
 
     @PostMapping
     public ResponseEntity<?> addIssue(@RequestBody AddIssueRequest request) {
         try {
-            Issue result = service.addIssue(request.toIssue());
+            Issue result = service.addIssue(addIssueRequestMapper.apply(request));
             if (result == null) {
                 return new ResponseEntity<>("Failed to save issue", HttpStatus.BAD_REQUEST);
             }
@@ -119,8 +121,7 @@ public class IssueController {
     @PostMapping(value = "/duplicates")
     public ResponseEntity<?> retrieveDuplicateIssues(@RequestBody AddIssueRequest addIssueRequest) {
         try {
-            Issue issue = addIssueRequest.toIssue();
-            issue.setStatus(Status.TO_DO);
+            Issue issue = addIssueRequestMapper.apply(addIssueRequest);
 
             List<IssueDto> result = service.retrieveDuplicateIssues(issue)
                     .stream()

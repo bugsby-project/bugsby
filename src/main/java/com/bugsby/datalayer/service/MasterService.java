@@ -157,7 +157,6 @@ public class MasterService implements Service {
                         .filter(Boolean::booleanValue)
                         .orElseThrow(() -> new UserNotInProjectException("The assignee is not a participant")));
 
-        issue.setStatus(Status.TO_DO);
         return issueRepository.save(issue);
     }
 
