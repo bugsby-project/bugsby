@@ -1,8 +1,7 @@
 package com.bugsby.datalayer.controllers;
 
 import com.bugsby.datalayer.controllers.dtos.IssueDto;
-import com.bugsby.datalayer.controllers.dtos.requests.AddIssueRequest;
-import com.bugsby.datalayer.controllers.dtos.requests.UpdateIssueRequest;
+import com.bugsby.datalayer.controllers.dtos.requests.IssueRequest;
 import com.bugsby.datalayer.controllers.utils.Utils;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.service.Service;
@@ -37,12 +36,12 @@ public class IssueController {
     @Autowired
     private Service service;
     @Autowired
-    private Function<AddIssueRequest, Issue> addIssueRequestMapper;
+    private Function<IssueRequest, Issue> issueRequestMapper;
 
     @PostMapping
-    public ResponseEntity<?> addIssue(@RequestBody AddIssueRequest request) {
+    public ResponseEntity<?> addIssue(@RequestBody IssueRequest request) {
         try {
-            Issue result = service.addIssue(addIssueRequestMapper.apply(request));
+            Issue result = service.addIssue(issueRequestMapper.apply(request));
             if (result == null) {
                 return new ResponseEntity<>("Failed to save issue", HttpStatus.BAD_REQUEST);
             }
@@ -98,10 +97,10 @@ public class IssueController {
     }
 
     @PutMapping(value = "/{id}")
-    public ResponseEntity<?> updateIssue(@PathVariable Long id, @RequestBody UpdateIssueRequest request, @RequestHeader(value = "Authorization") String token) {
+    public ResponseEntity<?> updateIssue(@PathVariable Long id, @RequestBody IssueRequest request, @RequestHeader(value = "Authorization") String token) {
         String username = Utils.extractUsername(token);
         try {
-            Issue issue = request.toIssue();
+            Issue issue = issueRequestMapper.apply(request);
             issue.setId(id);
             Issue result = service.updateIssue(issue, username);
             if (result == null) {
@@ -119,9 +118,9 @@ public class IssueController {
     }
 
     @PostMapping(value = "/duplicates")
-    public ResponseEntity<?> retrieveDuplicateIssues(@RequestBody AddIssueRequest addIssueRequest) {
+    public ResponseEntity<?> retrieveDuplicateIssues(@RequestBody IssueRequest issueRequest) {
         try {
-            Issue issue = addIssueRequestMapper.apply(addIssueRequest);
+            Issue issue = issueRequestMapper.apply(issueRequest);
 
             List<IssueDto> result = service.retrieveDuplicateIssues(issue)
                     .stream()
