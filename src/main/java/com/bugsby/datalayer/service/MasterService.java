@@ -54,13 +54,15 @@ public class MasterService implements Service {
     @Override
     @Transactional
     public User createAccount(User user) throws UsernameTakenException, EmailTakenException {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new UsernameTakenException(Constants.USERNAME_TAKEN_ERROR_MESSAGE);
-        }
+        userRepository.findByUsername(user.getUsername())
+                .ifPresent(user1 -> {
+                    throw new UsernameTakenException(Constants.USERNAME_TAKEN_ERROR_MESSAGE);
+                });
 
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new EmailTakenException(Constants.EMAIL_TAKEN_ERROR_MESSAGE);
-        }
+        userRepository.findByEmail(user.getEmail())
+                .ifPresent(user1 -> {
+                    throw new EmailTakenException(Constants.EMAIL_TAKEN_ERROR_MESSAGE);
+                });
 
         return userRepository.save(user);
     }
@@ -68,11 +70,8 @@ public class MasterService implements Service {
     @Override
     @Transactional
     public User login(String username) throws UserNotFoundException {
-        Optional<User> result = userRepository.findByUsername(username);
-        if (result.isEmpty()) {
-            throw new UserNotFoundException(Constants.USER_NOT_FOUND_ERROR_MESSAGE);
-        }
-        return result.get();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(Constants.USER_NOT_FOUND_ERROR_MESSAGE));
     }
 
     @Override
@@ -93,49 +92,38 @@ public class MasterService implements Service {
     @Override
     @Transactional
     public Set<Involvement> getInvolvementsByUsername(String username) throws UserNotFoundException {
-        Optional<User> user = userRepository.findByUsername(username);
-        if (user.isEmpty()) {  // the user does not exist
-            throw new UserNotFoundException(Constants.USER_DOES_NOT_EXIST_ERROR_MESSAGE);
-        }
-
-        return user.get().getInvolvements();
+        return userRepository.findByUsername(username)
+                .map(User::getInvolvements)
+                .orElseThrow(() -> new UserNotFoundException(Constants.USER_DOES_NOT_EXIST_ERROR_MESSAGE));
     }
 
     @Override
     @Transactional
     public Involvement addParticipant(Involvement involvement, User requester) throws UserNotInProjectException, UserNotFoundException, ProjectNotFoundException, UserAlreadyInProjectException {
-        // verify if the users are valid
-        Optional<User> userRequester = userRepository.findById(requester.getId());
-        if (userRequester.isEmpty()) {
-            throw new UserNotFoundException("Requester does not exist");
-        }
-
-        boolean isParticipant = userRequester.get()
-                .getInvolvements()
-                .stream()
-                .anyMatch(involvement1 -> involvement1.getProject().getId().equals(involvement.getProject().getId()));
-        if (!isParticipant) {
-            throw new UserNotInProjectException("Requester is not in the project");
-        }
+        userRepository.findById(requester.getId())
+                .map(User::getInvolvements)
+                .map(involvements -> involvements.stream()
+                        .anyMatch(involvement1 -> involvement1.getProject().getId().equals(involvement.getProject().getId())))
+                // verify if the requester is part of the project
+                .map(aBoolean -> Optional.of(aBoolean)
+                        .filter(Boolean::booleanValue)
+                        .orElseThrow(() -> new UserNotInProjectException("Requester is not in the project")))
+                .orElseThrow(() -> new UserNotFoundException("Requester does not exist"));
 
         Optional<User> userParticipant = userRepository.findByUsername(involvement.getUser().getUsername());
-        if (userParticipant.isEmpty()) {
-            throw new UserNotFoundException(Constants.USER_DOES_NOT_EXIST_ERROR_MESSAGE);
-        }
+        userParticipant.orElseThrow(() -> new UserNotFoundException(Constants.USER_DOES_NOT_EXIST_ERROR_MESSAGE));
 
         Optional<Project> projectOptional = projectRepository.findById(involvement.getProject().getId());
-        if (projectOptional.isEmpty()) {
-            throw new ProjectNotFoundException("Project does not exist");
-        }
+        projectOptional.orElseThrow(() -> new ProjectNotFoundException("Project does not exist"));
 
         // verify if the user is already a participant
-        isParticipant = userParticipant.get()
+        boolean isParticipant = userParticipant.get()
                 .getInvolvements()
                 .stream()
                 .anyMatch(involvement1 -> involvement1.getProject().equals(projectOptional.get()));
-        if (isParticipant) {
-            throw new UserAlreadyInProjectException("The user is already a participant");
-        }
+        Optional.of(isParticipant)
+                .filter(aBoolean -> !aBoolean)
+                .orElseThrow(() -> new UserAlreadyInProjectException("The user is already a participant"));
 
         involvement.setUser(userParticipant.get());
         involvement.setProject(projectOptional.get());
@@ -153,25 +141,21 @@ public class MasterService implements Service {
     @Transactional
     public Issue addIssue(Issue issue) throws UserNotInProjectException, UserNotFoundException, AiServiceException {
         checkOffensiveLanguage(issue);
-        Optional<User> reporter = userRepository.findById(issue.getReporter().getId());
-        if (reporter.isEmpty()) {
-            throw new UserNotFoundException(Constants.USER_DOES_NOT_EXIST_ERROR_MESSAGE);
-        }
 
-        if (issue.getAssignee() != null) {
-            Optional<User> assignee = userRepository.findById(issue.getAssignee().getId());
-            if (assignee.isEmpty()) {
-                throw new UserNotFoundException(Constants.USER_DOES_NOT_EXIST_ERROR_MESSAGE);
-            }
+        // check if the reporter is a valid user
+        userRepository.findById(issue.getReporter().getId())
+                .orElseThrow(() -> new UserNotFoundException(Constants.USER_DOES_NOT_EXIST_ERROR_MESSAGE));
 
-            boolean isParticipant = assignee.get()
-                    .getInvolvements()
-                    .stream()
-                    .anyMatch(involvement -> involvement.getProject().getId().equals(issue.getProject().getId()));
-            if (!isParticipant) {
-                throw new UserNotInProjectException("The assignee is not a participant");
-            }
-        }
+        // verify the assignee
+        Optional.ofNullable(issue.getAssignee())
+                .map(User::getId)
+                .map(id -> userRepository.findById(id)
+                        .orElseThrow(() -> new UserNotFoundException(Constants.USER_DOES_NOT_EXIST_ERROR_MESSAGE)))
+                .map(User::getInvolvements)
+                .map(involvements -> Optional.of(involvements.stream()
+                                .anyMatch(involvement -> involvement.getProject().getId().equals(issue.getProject().getId())))
+                        .filter(Boolean::booleanValue)
+                        .orElseThrow(() -> new UserNotInProjectException("The assignee is not a participant")));
 
         issue.setStatus(Status.TO_DO);
         return issueRepository.save(issue);
@@ -180,15 +164,12 @@ public class MasterService implements Service {
     @Override
     @Transactional
     public List<Issue> getAssignedIssues(String username) throws UserNotFoundException {
-        Optional<User> user = userRepository.findByUsername(username);
-        if (user.isEmpty()) {
-            throw new UserNotFoundException(Constants.USER_DOES_NOT_EXIST_ERROR_MESSAGE);
-        }
-
-        return user.get().getAssignedIssues()
-                .stream()
-                .sorted(Comparator.comparing(Issue::getStatus))
-                .toList();
+        return userRepository.findByUsername(username)
+                .map(User::getAssignedIssues)
+                .map(issues -> issues.stream()
+                        .sorted(Comparator.comparing(Issue::getStatus))
+                        .toList())
+                .orElseThrow(() -> new UserNotFoundException(Constants.USER_DOES_NOT_EXIST_ERROR_MESSAGE));
     }
 
     @Override
@@ -201,9 +182,7 @@ public class MasterService implements Service {
     @Transactional
     public Issue deleteIssue(long id, String requesterUsername) throws IssueNotFoundException, UserNotInProjectException {
         Optional<Issue> issue = issueRepository.findById(id);
-        if (issue.isEmpty()) {
-            throw new IssueNotFoundException(Constants.ISSUE_DOES_NOT_EXIST_ERROR_MESSAGE);
-        }
+        issue.orElseThrow(() -> new IssueNotFoundException(Constants.ISSUE_DOES_NOT_EXIST_ERROR_MESSAGE));
 
         if (!isParticipantInProject(issue.get(), requesterUsername)) {
             throw new UserNotInProjectException("The requester is not part of the project");
@@ -223,20 +202,19 @@ public class MasterService implements Service {
     @Override
     @Transactional
     public Issue updateIssue(Issue issue, String requesterUsername) throws IllegalArgumentException, UserNotInProjectException, IssueNotFoundException {
-        if (issue == null || requesterUsername == null) {
-            throw new IllegalArgumentException();
-        }
+        Optional.ofNullable(issue)
+                .orElseThrow(IllegalArgumentException::new);
+        Optional.ofNullable(requesterUsername)
+                .orElseThrow(IllegalArgumentException::new);
 
-        Optional<Issue> foundIssue = issueRepository.findById(issue.getId());
-        if (foundIssue.isEmpty()) {
-            throw new IssueNotFoundException(Constants.ISSUE_DOES_NOT_EXIST_ERROR_MESSAGE);
-        }
-
-        if (!isParticipantInProject(foundIssue.get(), requesterUsername)) {
-            throw new UserNotInProjectException("The requester is not part of the project");
-        }
-
-        return issueRepository.save(issue);
+        return issueRepository.findById(issue.getId())
+                // check if the requester is part of the project
+                .map(issue1 -> Optional.of(isParticipantInProject(issue1, requesterUsername))
+                        .filter(Boolean::booleanValue)
+                        .map(aBoolean -> issue1)
+                        .orElseThrow(() -> new UserNotInProjectException("The requester is not part of the project")))
+                .map(issueRepository::save)
+                .orElseThrow(() -> new IssueNotFoundException(Constants.ISSUE_DOES_NOT_EXIST_ERROR_MESSAGE));
     }
 
     @Override
