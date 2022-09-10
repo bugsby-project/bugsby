@@ -157,7 +157,6 @@ public class MasterService implements Service {
                         .filter(Boolean::booleanValue)
                         .orElseThrow(() -> new UserNotInProjectException("The assignee is not a participant")));
 
-        issue.setStatus(Status.TO_DO);
         return issueRepository.save(issue);
     }
 
@@ -192,9 +191,9 @@ public class MasterService implements Service {
         issue.get().getProject()
                 .getIssues()
                 .removeIf(issue1 -> issue1.equals(issue.get()));
-        issue.get().getAssignee()
-                .getAssignedIssues()
-                .removeIf(issue1 -> issue1.equals(issue.get()));
+        Optional.ofNullable(issue.get().getAssignee())
+                .map(User::getAssignedIssues)
+                .ifPresent(issues -> issues.removeIf(issue1 -> issue1.equals(issue.get())));
         issueRepository.deleteById(id);
         return issue.get();
     }

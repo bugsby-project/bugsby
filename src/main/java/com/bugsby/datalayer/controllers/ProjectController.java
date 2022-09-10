@@ -14,12 +14,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.function.Function;
+
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/projects")
 public class ProjectController {
     @Autowired
     private Service service;
+    @Autowired
+    private Function<Project, ProjectDto> projectMapper;
 
     @PostMapping
     public ResponseEntity<?> createProject(@RequestBody Project project) {
@@ -41,6 +45,6 @@ public class ProjectController {
         if (result == null) {
             return new ResponseEntity<>("Project does not exist", HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(ProjectDto.from(result), HttpStatus.OK);
+        return new ResponseEntity<>(projectMapper.apply(result), HttpStatus.OK);
     }
 }

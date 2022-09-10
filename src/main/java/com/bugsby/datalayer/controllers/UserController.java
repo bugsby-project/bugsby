@@ -15,12 +15,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.function.Function;
+
 @RestController
 @CrossOrigin
 @RequestMapping(value = "users")
 public class UserController {
     @Autowired
     private Service service;
+    @Autowired
+    private Function<User, UserDto> userMapper;
 
     /**
      * Handler responsible for creating new accounts
@@ -33,7 +37,7 @@ public class UserController {
     public ResponseEntity<?> createAccount(@RequestBody User user) {
         try {
             User result = service.createAccount(user);
-            return new ResponseEntity<>(UserDto.from(result), HttpStatus.OK);
+            return new ResponseEntity<>(userMapper.apply(result), HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>("Invalid data", HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -52,7 +56,7 @@ public class UserController {
     public ResponseEntity<?> getUser(@RequestParam(value = "username") String username) {
         try {
             User user = service.login(username);
-            return new ResponseEntity<>(UserDto.from(user), HttpStatus.OK);
+            return new ResponseEntity<>(userMapper.apply(user), HttpStatus.OK);
         } catch (UserNotFoundException e) {
             return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
         }
