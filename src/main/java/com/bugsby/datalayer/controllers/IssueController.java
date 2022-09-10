@@ -37,6 +37,8 @@ public class IssueController {
     private Service service;
     @Autowired
     private Function<IssueRequest, Issue> issueRequestMapper;
+    @Autowired
+    private Function<Issue, IssueDto> issueMapper;
 
     @PostMapping
     public ResponseEntity<?> addIssue(@RequestBody IssueRequest request) {
@@ -46,7 +48,7 @@ public class IssueController {
                 return new ResponseEntity<>("Failed to save issue", HttpStatus.BAD_REQUEST);
             }
 
-            return new ResponseEntity<>(IssueDto.from(result), HttpStatus.CREATED);
+            return new ResponseEntity<>(issueMapper.apply(result), HttpStatus.CREATED);
         } catch (UserNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (UserNotInProjectException e) {
@@ -64,7 +66,7 @@ public class IssueController {
     public ResponseEntity<?> getAssignedIssues(@RequestParam(value = "assignee") String assigneeUsername) {
         try {
             List<Issue> issues = service.getAssignedIssues(assigneeUsername);
-            List<IssueDto> result = issues.stream().map(IssueDto::from).collect(Collectors.toList());
+            List<IssueDto> result = issues.stream().map(issueMapper).collect(Collectors.toList());
             return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (UserNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -80,7 +82,7 @@ public class IssueController {
             return new ResponseEntity<>("Issue does not exist", HttpStatus.NOT_FOUND);
         }
 
-        return new ResponseEntity<>(IssueDto.from(issue), HttpStatus.OK);
+        return new ResponseEntity<>(issueMapper.apply(issue), HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -88,7 +90,7 @@ public class IssueController {
         String username = Utils.extractUsername(token);
         try {
             Issue issue = service.deleteIssue(id, username);
-            return new ResponseEntity<>(IssueDto.from(issue), HttpStatus.OK);
+            return new ResponseEntity<>(issueMapper.apply(issue), HttpStatus.OK);
         } catch (IssueNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (UserNotInProjectException e) {
@@ -107,7 +109,7 @@ public class IssueController {
                 return new ResponseEntity<>("Failed to update issue", HttpStatus.BAD_REQUEST);
             }
 
-            return new ResponseEntity<>(IssueDto.from(result), HttpStatus.OK);
+            return new ResponseEntity<>(issueMapper.apply(result), HttpStatus.OK);
         } catch (IssueNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (UserNotInProjectException e) {
@@ -124,7 +126,7 @@ public class IssueController {
 
             List<IssueDto> result = service.retrieveDuplicateIssues(issue)
                     .stream()
-                    .map(IssueDto::from)
+                    .map(issueMapper)
                     .toList();
             return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (ProjectNotFoundException e) {

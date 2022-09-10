@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,6 +31,8 @@ import java.util.stream.Collectors;
 public class InvolvementController {
     @Autowired
     private Service service;
+    @Autowired
+    private Function<Involvement, InvolvementDto> involvementMapper;
 
     @GetMapping
     public ResponseEntity<?> getInvolvementsByUsername(@RequestParam(value = "username") String username) {
@@ -37,7 +40,7 @@ public class InvolvementController {
             Set<Involvement> involvements = service.getInvolvementsByUsername(username);
             Set<InvolvementDto> result = involvements
                     .stream()
-                    .map(InvolvementDto::from)
+                    .map(involvementMapper)
                     .collect(Collectors.toSet());
             return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (UserNotFoundException e) {
@@ -57,7 +60,7 @@ public class InvolvementController {
             if (result == null) {  // operation has failed
                 return new ResponseEntity<>("Failed to add participant", HttpStatus.BAD_REQUEST);
             } else {
-                return new ResponseEntity<>(InvolvementDto.from(result), HttpStatus.CREATED);
+                return new ResponseEntity<>(involvementMapper.apply(result), HttpStatus.CREATED);
             }
         } catch (UserNotFoundException | ProjectNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

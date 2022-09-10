@@ -8,6 +8,7 @@ import com.bugsby.datalayer.controllers.security.JwtUtils;
 import com.bugsby.datalayer.controllers.security.SecurityConstants;
 import com.bugsby.datalayer.controllers.security.UserDetailsServiceImpl;
 import com.bugsby.datalayer.controllers.utils.UriMapping;
+import com.bugsby.datalayer.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Controller
 @CrossOrigin
@@ -46,6 +48,8 @@ public class AuthenticationController {
 
     @Autowired
     private UserDetailsServiceImpl service;
+    @Autowired
+    private Function<User, UserDto> userMapper;
 
     @GetMapping(UriMapping.HELLO)
     public ResponseEntity<?> hello() {
@@ -63,7 +67,7 @@ public class AuthenticationController {
         UserDetails userDetails = service.loadUserByUsername(request.username());
         String jwt = JwtUtils.generateToken(userDetails);
 
-        return new ResponseEntity<>(new AuthenticationResponse(jwt, UserDto.from(service.getLastUser())), HttpStatus.OK);
+        return new ResponseEntity<>(new AuthenticationResponse(jwt, userMapper.apply(service.getLastUser())), HttpStatus.OK);
     }
 }
 
