@@ -7,7 +7,6 @@ import com.bugsby.datalayer.controllers.filters.JwtRequestFilter;
 import com.bugsby.datalayer.controllers.security.JwtUtils;
 import com.bugsby.datalayer.controllers.security.SecurityConstants;
 import com.bugsby.datalayer.controllers.security.UserDetailsServiceImpl;
-import com.bugsby.datalayer.controllers.utils.UriMapping;
 import com.bugsby.datalayer.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,7 +28,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,12 +49,7 @@ public class AuthenticationController {
     @Autowired
     private Function<User, UserDto> userMapper;
 
-    @GetMapping(UriMapping.HELLO)
-    public ResponseEntity<?> hello() {
-        return new ResponseEntity<>("Hello", HttpStatus.OK);
-    }
-
-    @PostMapping(UriMapping.LOGGING)
+    @PostMapping("/users/login")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest request) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
@@ -98,7 +91,7 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .configurationSource(request -> configuration)
                 .and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers(UriMapping.CREATE_ACCOUNT, UriMapping.LOGGING)
+                .antMatchers("/users", "/users/login")
                 .permitAll()
                 .anyRequest().authenticated().and()
                 .exceptionHandling().and().sessionManagement()
