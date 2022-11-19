@@ -1,0 +1,7 @@
+{
+  "library": "spring-mvc",
+  "modelPackage": "com.bugsby.datalayer.swagger.model",
+  "apiPackage": "com.bugsby.datalayer.swagger.api",
+  "invokerPackage": "com.bugsby.datalayer.swagger.invoker",
+  "interfaceOnly": "true"
+}
