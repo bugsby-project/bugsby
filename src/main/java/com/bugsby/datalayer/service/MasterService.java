@@ -1,13 +1,12 @@
 package com.bugsby.datalayer.service;
 
-import com.bugsby.datalayer.controllers.utils.Constants;
+import com.bugsby.datalayer.service.utils.Constants;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
 import com.bugsby.datalayer.model.ProfanityLevel;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.SeverityLevel;
-import com.bugsby.datalayer.model.Status;
 import com.bugsby.datalayer.model.User;
 import com.bugsby.datalayer.repository.InvolvementRepository;
 import com.bugsby.datalayer.repository.IssueRepository;

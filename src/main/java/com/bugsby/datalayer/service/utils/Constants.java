@@ -1,4 +1,4 @@
-package com.bugsby.datalayer.controllers.utils;
+package com.bugsby.datalayer.service.utils;
 
 public class Constants {
 
