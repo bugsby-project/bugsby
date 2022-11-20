@@ -1,138 +1,86 @@
 package com.bugsby.datalayer.controllers;
 
-import com.bugsby.datalayer.controllers.dtos.IssueDto;
-import com.bugsby.datalayer.controllers.dtos.requests.IssueRequest;
 import com.bugsby.datalayer.controllers.utils.Utils;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.service.Service;
-import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
-import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
-import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
-import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
+import com.bugsby.datalayer.swagger.api.IssuesApi;
+import com.bugsby.datalayer.swagger.model.IssueList;
+import com.bugsby.datalayer.swagger.model.IssueRequest;
+import com.bugsby.datalayer.swagger.model.IssueResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
-@RestController
+@Controller
 @CrossOrigin
-@RequestMapping(value = "/issues")
-public class IssueController {
+public class IssueController implements IssuesApi {
     @Autowired
     private Service service;
     @Autowired
     private Function<IssueRequest, Issue> issueRequestMapper;
     @Autowired
-    private Function<Issue, IssueDto> issueMapper;
+    private Function<Issue, IssueResponse> issueResponseMapper;
 
-    @PostMapping
-    public ResponseEntity<?> addIssue(@RequestBody IssueRequest request) {
-        try {
-            Issue result = service.addIssue(issueRequestMapper.apply(request));
-            if (result == null) {
-                return new ResponseEntity<>("Failed to save issue", HttpStatus.BAD_REQUEST);
-            }
-
-            return new ResponseEntity<>(issueMapper.apply(result), HttpStatus.CREATED);
-        } catch (UserNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (UserNotInProjectException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
-        } catch (AiServiceException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_ACCEPTABLE);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+    @Override
+    public ResponseEntity<IssueResponse> addIssue(String authorization, IssueRequest body) {
+        Issue issue = issueRequestMapper.apply(body);
+        issue = service.addIssue(issue);
+        IssueResponse issueResponse = issueResponseMapper.apply(issue);
+        return new ResponseEntity<>(issueResponse, HttpStatus.CREATED);
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAssignedIssues(@RequestParam(value = "assignee") String assigneeUsername) {
-        try {
-            List<Issue> issues = service.getAssignedIssues(assigneeUsername);
-            List<IssueDto> result = issues.stream().map(issueMapper).collect(Collectors.toList());
-            return new ResponseEntity<>(result, HttpStatus.OK);
-        } catch (UserNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+    @Override
+    public ResponseEntity<IssueResponse> deleteIssue(String authorization, Long id) {
+        String username = Utils.extractUsername(authorization);
+        Issue issue = service.deleteIssue(id, username);
+        IssueResponse issueResponse = issueResponseMapper.apply(issue);
+        return ResponseEntity.ok(issueResponse);
     }
 
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<?> getIssueById(@PathVariable Long id) {
-        Issue issue = service.getIssueById(id);
-        if (issue == null) {
-            return new ResponseEntity<>("Issue does not exist", HttpStatus.NOT_FOUND);
-        }
-
-        return new ResponseEntity<>(issueMapper.apply(issue), HttpStatus.OK);
+    @Override
+    public ResponseEntity<IssueList> getAssignedIssues(String authorization, String username) {
+        List<IssueResponse> responses = service.getAssignedIssues(username)
+                .stream()
+                .map(issueResponseMapper)
+                .toList();
+        IssueList issueList = new IssueList().issues(responses);
+        return ResponseEntity.ok(issueList);
     }
 
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<?> deleteIssue(@PathVariable Long id, @RequestHeader(value = "Authorization") String token) {
-        String username = Utils.extractUsername(token);
-        try {
-            Issue issue = service.deleteIssue(id, username);
-            return new ResponseEntity<>(issueMapper.apply(issue), HttpStatus.OK);
-        } catch (IssueNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (UserNotInProjectException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
-        }
+    @Override
+    public ResponseEntity<IssueResponse> getIssueById(String authorization, Long id) {
+        IssueResponse response = Optional.ofNullable(service.getIssueById(id))
+                .map(issueResponseMapper)
+                .orElseThrow(() -> new IssueNotFoundException("Issue does not exist"));
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping(value = "/{id}")
-    public ResponseEntity<?> updateIssue(@PathVariable Long id, @RequestBody IssueRequest request, @RequestHeader(value = "Authorization") String token) {
-        String username = Utils.extractUsername(token);
-        try {
-            Issue issue = issueRequestMapper.apply(request);
-            issue.setId(id);
-            Issue result = service.updateIssue(issue, username);
-            if (result == null) {
-                return new ResponseEntity<>("Failed to update issue", HttpStatus.BAD_REQUEST);
-            }
-
-            return new ResponseEntity<>(issueMapper.apply(result), HttpStatus.OK);
-        } catch (IssueNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (UserNotInProjectException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+    @Override
+    public ResponseEntity<IssueList> retrieveDuplicateIssues(String authorization, IssueRequest body) {
+        Issue issue = issueRequestMapper.apply(body);
+        List<IssueResponse> responses = service.retrieveDuplicateIssues(issue)
+                .stream()
+                .map(issueResponseMapper)
+                .toList();
+        IssueList issueList = new IssueList().issues(responses);
+        return ResponseEntity.ok(issueList);
     }
 
-    @PostMapping(value = "/duplicates")
-    public ResponseEntity<?> retrieveDuplicateIssues(@RequestBody IssueRequest issueRequest) {
-        try {
-            Issue issue = issueRequestMapper.apply(issueRequest);
+    @Override
+    public ResponseEntity<IssueResponse> updateIssue(String authorization, Long id, IssueRequest body) {
+        String username = Utils.extractUsername(authorization);
+        Issue issue = issueRequestMapper.apply(body);
+        issue.setId(id);
 
-            List<IssueDto> result = service.retrieveDuplicateIssues(issue)
-                    .stream()
-                    .map(issueMapper)
-                    .toList();
-            return new ResponseEntity<>(result, HttpStatus.OK);
-        } catch (ProjectNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (AiServiceException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
-        }
+        issue = service.updateIssue(issue, username);
+        IssueResponse issueResponse = issueResponseMapper.apply(issue);
+        return ResponseEntity.ok(issueResponse);
     }
 }

@@ -1,6 +1,7 @@
 package com.bugsby.datalayer.controllers;
 
 import com.bugsby.datalayer.service.exceptions.AiServiceException;
+import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
 import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
 import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
 import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class ExceptionHandlerController {
     @ExceptionHandler(value = AiServiceException.class)
     public ResponseEntity<ErrorResponse> handleAiServiceException(AiServiceException e) {
-        return ResponseEntity.badRequest().body(new ErrorResponse().message(e.getMessage()));
+        return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(value = UserNotFoundException.class)
@@ -36,5 +37,10 @@ public class ExceptionHandlerController {
     @ExceptionHandler(value = UserAlreadyInProjectException.class)
     public ResponseEntity<ErrorResponse> handleUserAlreadyInProjectException(UserAlreadyInProjectException e) {
         return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = IssueNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleIssueNotFoundException(IssueNotFoundException e) {
+        return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.NOT_FOUND);
     }
 }

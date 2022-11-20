@@ -493,7 +493,7 @@ components:
           type: string
           description: 'Stack trace of the issue'
         severity:
-          $ref: '#/components/schemas/SeverityLevel'
+          $ref: '#/components/schemas/Severity'
         type:
           $ref: '#/components/schemas/IssueType'
         status:
@@ -533,7 +533,7 @@ components:
           type: string
           description: 'Stack trace of the issue'
         severity:
-          $ref: '#/components/schemas/SeverityLevel'
+          $ref: '#/components/schemas/Severity'
         type:
           $ref: '#/components/schemas/IssueType'
         status:
@@ -606,6 +606,14 @@ components:
         - TO_DO
         - IN_PROGRESS
         - DONE
+    Severity:
+      type: string
+      enum:
+        - TRIVIAL
+        - MINOR
+        - MAJOR
+        - CRITICAL
+        - BLOCKER
 
     UsernameList:
       type: object
