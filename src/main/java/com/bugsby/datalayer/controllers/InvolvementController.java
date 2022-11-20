@@ -1,73 +1,50 @@
 package com.bugsby.datalayer.controllers;
 
-import com.bugsby.datalayer.controllers.dtos.InvolvementDto;
-import com.bugsby.datalayer.controllers.dtos.requests.AddParticipantRequest;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Project;
+import com.bugsby.datalayer.model.Role;
 import com.bugsby.datalayer.model.User;
 import com.bugsby.datalayer.service.Service;
-import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
-import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
-import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
-import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
+import com.bugsby.datalayer.swagger.api.InvolvementsApi;
+import com.bugsby.datalayer.swagger.model.InvolvementResponse;
+import com.bugsby.datalayer.swagger.model.InvolvementsList;
+import com.bugsby.datalayer.swagger.model.InvolvementsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
+import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
-@RestController
+@Controller
 @CrossOrigin
-@RequestMapping(value = "/involvements")
-public class InvolvementController {
+public class InvolvementController implements InvolvementsApi {
     @Autowired
     private Service service;
     @Autowired
-    private Function<Involvement, InvolvementDto> involvementMapper;
+    private Function<Involvement, InvolvementResponse> involvementResponseMapper;
 
-    @GetMapping
-    public ResponseEntity<?> getInvolvementsByUsername(@RequestParam(value = "username") String username) {
-        try {
-            Set<Involvement> involvements = service.getInvolvementsByUsername(username);
-            Set<InvolvementDto> result = involvements
-                    .stream()
-                    .map(involvementMapper)
-                    .collect(Collectors.toSet());
-            return new ResponseEntity<>(result, HttpStatus.OK);
-        } catch (UserNotFoundException e) {
-            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
-        }
+    @Override
+    public ResponseEntity<InvolvementResponse> addParticipant(String authorization, InvolvementsRequest body) {
+        Project project = new Project(body.getProjectId());
+        User participant = new User(body.getUsername());
+        User requester = new User(body.getRequesterId());
+        Role role = Role.valueOf(body.getRole().name());
+        Involvement involvement = new Involvement(role, participant, project);
+
+        Involvement result = service.addParticipant(involvement, requester);
+        InvolvementResponse response = involvementResponseMapper.apply(result);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PostMapping
-    public ResponseEntity<?> addParticipant(@RequestBody AddParticipantRequest request) {
-        try {
-            Project project = new Project(request.projectId());
-            User participant = new User(request.username());
-            User requester = new User(request.requesterId());
-            Involvement involvement = new Involvement(request.role(), participant, project);
-
-            Involvement result = service.addParticipant(involvement, requester);
-            if (result == null) {  // operation has failed
-                return new ResponseEntity<>("Failed to add participant", HttpStatus.BAD_REQUEST);
-            } else {
-                return new ResponseEntity<>(involvementMapper.apply(result), HttpStatus.CREATED);
-            }
-        } catch (UserNotFoundException | ProjectNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (UserNotInProjectException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
-        } catch (UserAlreadyInProjectException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+    @Override
+    public ResponseEntity<InvolvementsList> getInvolvementsByUsername(String authorization, String username) {
+        List<InvolvementResponse> responses = service.getInvolvementsByUsername(username).stream()
+                .map(involvementResponseMapper)
+                .toList();
+        InvolvementsList involvementsList = new InvolvementsList().involvements(responses);
+        return ResponseEntity.ok(involvementsList);
     }
 }
