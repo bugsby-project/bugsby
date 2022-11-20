@@ -206,7 +206,7 @@ paths:
           required: true
           schema:
             type: integer
-            minimum: 1
+            format: int64
           description: 'The project unique identifier'
       responses:
         200:
