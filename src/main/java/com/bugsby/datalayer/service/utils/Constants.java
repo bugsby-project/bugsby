@@ -15,7 +15,7 @@ public class Constants {
     /**
      * Error message displayed when logging into the application fails due to wrong credentials
      */
-    public static final String USER_NOT_FOUND_ERROR_MESSAGE = "Invalid credentials";
+    public static final String USER_NOT_FOUND_ERROR_MESSAGE = "User not found";
 
     /**
      * Error message displayed when trying to access information of a user that does not exist

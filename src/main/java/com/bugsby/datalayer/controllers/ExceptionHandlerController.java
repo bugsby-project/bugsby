@@ -1,6 +1,8 @@
 package com.bugsby.datalayer.controllers;
 
+import com.bugsby.datalayer.controllers.security.SecurityConstants;
 import com.bugsby.datalayer.service.exceptions.AiServiceException;
+import com.bugsby.datalayer.service.exceptions.EmailTakenException;
 import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
 import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
 import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
@@ -9,6 +11,7 @@ import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
 import com.bugsby.datalayer.swagger.model.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -39,8 +42,18 @@ public class ExceptionHandlerController {
         return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(value = EmailTakenException.class)
+    public ResponseEntity<ErrorResponse> handleEmailTakenException(EmailTakenException e) {
+        return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(value = IssueNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleIssueNotFoundException(IssueNotFoundException e) {
         return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException e) {
+        return new ResponseEntity<>(new ErrorResponse().message(SecurityConstants.AUTHENTICATION_FAILED_MESSAGE), HttpStatus.FORBIDDEN);
     }
 }
