@@ -1,0 +1,668 @@
+openapi: 3.0.0
+
+info:
+  description: API for Bugsby
+  version: 'v1.0'
+  title: Bugsby
+
+paths:
+  /ai/suggested-type:
+    get:
+      summary: Retrieving the suggested issue type
+      operationId: getSuggestedType
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/title'
+      responses:
+        200:
+          description: 'Retrieved suggested issue type successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueTypeResponse'
+        400:
+          description: 'Unable to complete the request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ai/suggested-severity:
+    get:
+      summary: Retrieving the suggested severity of the issue
+      operationId: getSuggestedSeverity
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/title'
+      responses:
+        200:
+          description: 'Retrieved suggested issue type successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeverityLevelResponse'
+        400:
+          description: 'Unable to complete the request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/login:
+    post:
+      summary: Login
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+      responses:
+        200:
+          description: 'Successfully logged in'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        403:
+          description: 'Wrong credentials'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users:
+    post:
+      summary: Create a new user account
+      operationId: createAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        201:
+          description: 'Successfully created a new user account'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        400:
+          description: 'Unable to create a new user account'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: Get user details by username
+      operationId: getUserByUsername
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/username'
+      responses:
+        200:
+          description: 'Successfully retrieved user details'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        404:
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/usernames:
+    get:
+      summary: Retrieve the username of all the users
+      operationId: getUsernames
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+      responses:
+        200:
+          description: 'Successfully retrieved usernames'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsernameList'
+
+  /involvements:
+    get:
+      summary: Retrieve involvements by username
+      operationId: getInvolvementsByUsername
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/username'
+      responses:
+        200:
+          description: 'Successfully retrieved involvements'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvolvementsList'
+        404:
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Add participant
+      operationId: addParticipant
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvolvementsRequest'
+      responses:
+        201:
+          description: 'Successfully added participant'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvolvementResponse'
+        400:
+          description: 'The request could not be completed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /projects:
+    post:
+      summary: Create a project
+      operationId: createProject
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+      responses:
+        201:
+          description: 'Successfully created project'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        400:
+          description: 'Failed to create project'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /projects/{id}:
+    get:
+      summary: Retrieve project by unique identifier
+      operationId: getProjectById
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 'The project unique identifier'
+      responses:
+        200:
+          description: 'Successfully retrieved project'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        404:
+          description: 'Project not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /issues:
+    post:
+      summary: Add a new issue
+      operationId: addIssue
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueRequest'
+      responses:
+        201:
+          description: 'Added issue successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueResponse'
+        400:
+          description: 'Unable to save issue'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: Retrieve issues by assignee username
+      operationId: getAssignedIssues
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/username'
+      responses:
+        200:
+          description: 'Successfully retrieved issues assigned to the given username'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueList'
+        400:
+          description: 'Unable to retrieve issues'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /issues/duplicates:
+    get:
+      summary: Retrieve possible duplicate issues
+      operationId: retrieveDuplicateIssues
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueRequest'
+      responses:
+        200:
+          description: 'Successfully retrieved duplicate issues'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueList'
+        400:
+          description: 'Unable to retrieve duplicate issues'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /issues/{id}:
+    get:
+      summary: Retrieve issues by unique identifier
+      operationId: getIssueById
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/issueId'
+      responses:
+        200:
+          description: 'Successfully retrieved issue'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueResponse'
+        400:
+          description: 'Unable to retrieve issues'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete an issue
+      operationId: deleteIssue
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/issueId'
+      responses:
+        200:
+          description: 'Successfully deleted issue'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueResponse'
+        400:
+          description: 'Unable to delete issue'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update an issue
+      operationId: updateIssue
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/issueId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueRequest'
+      responses:
+        200:
+          description: 'Successfully updated the issue'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueResponse'
+        400:
+          description: 'Unable to update the issue'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    AuthenticationRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: 'Username of the user trying to authenticate'
+        password:
+          type: string
+          description: 'Password of the user trying to authenticate'
+    AuthenticationResponse:
+      type: object
+      properties:
+        jwt:
+          type: string
+          description: 'Resulting JWT'
+        user:
+          $ref: '#/components/schemas/UserResponse'
+    UserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: 'Username'
+        password:
+          type: string
+          description: 'Password'
+        firstName:
+          type: string
+          description: "User's first name"
+        lastName:
+          type: string
+          description: "User's last name"
+        email:
+          type: string
+          description: "User's email"
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 'User unique identifier'
+        username:
+          type: string
+          description: 'Username'
+        password:
+          type: string
+          description: 'Password'
+        firstName:
+          type: string
+          description: "User's first name"
+        lastName:
+          type: string
+          description: "User's last name"
+        email:
+          type: string
+          description: "User's email"
+    InvolvementsRequest:
+      type: object
+      properties:
+        projectId:
+          type: integer
+          format: int64
+          description: 'Project unique identifier'
+        requesterId:
+          type: integer
+          format: int64
+          description: 'The unique identifier of the person requesting the change'
+        username:
+          type: string
+          description: 'The username of user who the request is for'
+        role:
+          $ref: '#/components/schemas/Role'
+    InvolvementResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 'Involvement unique identifier'
+        user:
+          $ref: '#/components/schemas/UserResponse'
+        project:
+          $ref: '#/components/schemas/ProjectResponse'
+        role:
+          $ref: '#/components/schemas/Role'
+    ProjectRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: 'Project title'
+        description:
+          type: string
+          description: 'Project description'
+        userId:
+          type: integer
+          format: int64
+          description: 'The unique identifier of the user who makes the request'
+        role:
+          $ref: '#/components/schemas/Role'
+    ProjectResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 'Project unique identifier'
+        title:
+          type: string
+          description: 'Project title'
+        description:
+          type: string
+          description: 'Project description'
+        createdAt:
+          type: string
+          format: date-time
+    IssueRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: 'Title of the issue'
+        description:
+          type: string
+          description: 'Description of the issue'
+        expectedBehaviour:
+          type: string
+          description: 'Expected behaviour of the issue'
+        actualBehaviour:
+          type: string
+          description: 'Actual behaviour of the issue'
+        stackTrace:
+          type: string
+          description: 'Stack trace of the issue'
+        severity:
+          $ref: '#/components/schemas/Severity'
+        type:
+          $ref: '#/components/schemas/IssueType'
+        status:
+          $ref: '#/components/schemas/Status'
+        projectId:
+          type: integer
+          format: int64
+          description: 'Unique identifier of the corresponding project of the issue'
+        reporterId:
+          type: integer
+          format: int64
+          description: 'Unique identifier of the issue reporter'
+        assigneeId:
+          type: integer
+          format: int64
+          description: 'Unique identifier of the issue assignee'
+    IssueResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 'Unique identifier of the issue'
+        title:
+          type: string
+          description: 'Title of the issue'
+        description:
+          type: string
+          description: 'Description of the issue'
+        expectedBehaviour:
+          type: string
+          description: 'Expected behaviour of the issue'
+        actualBehaviour:
+          type: string
+          description: 'Actual behaviour of the issue'
+        stackTrace:
+          type: string
+          description: 'Stack trace of the issue'
+        severity:
+          $ref: '#/components/schemas/Severity'
+        type:
+          $ref: '#/components/schemas/IssueType'
+        status:
+          $ref: '#/components/schemas/Status'
+        projectId:
+          type: integer
+          format: int64
+          description: 'Unique identifier of the corresponding project of the issue'
+        reporterId:
+          type: integer
+          format: int64
+          description: 'Unique identifier of the issue reporter'
+        assigneeId:
+          type: integer
+          format: int64
+          description: 'Unique identifier of the issue assignee'
+    IssueTypeResponse:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/IssueType'
+    SeverityLevelResponse:
+      type: object
+      properties:
+        severity:
+          $ref: '#/components/schemas/SeverityLevel'
+
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: 'Detailed ErrorResponse message'
+
+    SeverityLevel:
+      type: string
+      enum:
+        - SEVERE
+        - NON_SEVERE
+    IssueType:
+      type: string
+      enum:
+        - BUG
+        - DOCUMENTATION
+        - DUPLICATE
+        - ENHANCEMENT
+        - HELP_WANTED
+        - INVALID
+        - QUESTION
+        - WONT_FIX
+    Role:
+      type: string
+      enum:
+        - PROJECT_MANAGER
+        - PRODUCT_OWNER
+        - TEAM_LEAD
+        - TECH_LEAD
+        - FULL_STACK_DEVELOPER
+        - FRONT_END_DEVELOPER
+        - BACK_END_DEVELOPER
+        - QA_LEAD
+        - QA_ENGINEER
+        - TESTER
+        - UI_DESIGNER
+        - UX_DESIGNER
+    Status:
+      type: string
+      enum:
+        - TO_DO
+        - IN_PROGRESS
+        - DONE
+    Severity:
+      type: string
+      enum:
+        - TRIVIAL
+        - MINOR
+        - MAJOR
+        - CRITICAL
+        - BLOCKER
+
+    UsernameList:
+      type: object
+      properties:
+        usernames:
+          type: array
+          items:
+            type: string
+    InvolvementsList:
+      type: object
+      properties:
+        involvements:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvolvementResponse'
+    IssueList:
+      type: object
+      properties:
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/IssueResponse'
+
+  parameters:
+    jwt:
+      in: header
+      name: Authorization
+      required: true
+      description: "User's JWT in the form of: Bearer {jwt}"
+      schema:
+        type: string
+    title:
+      in: query
+      name: title
+      description: 'The title of the issue'
+      schema:
+        type: string
+    username:
+      in: query
+      name: username
+      required: true
+      description: 'The desired username'
+      schema:
+        type: string
+    issueId:
+      in: path
+      name: id
+      required: true
+      description: 'Issue unique identifier'
+      schema:
+        type: integer
+        format: int64
