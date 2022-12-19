@@ -201,13 +201,7 @@ paths:
       operationId: getProjectById
       parameters:
         - $ref: '#/components/parameters/jwt'
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-            format: int64
-          description: 'The project unique identifier'
+        - $ref: '#/components/parameters/projectId'
       responses:
         200:
           description: 'Successfully retrieved project'
@@ -215,6 +209,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectResponse'
+        404:
+          description: 'Project not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /projects/{id}/involvements:
+    get:
+      summary: Retrieve involvements of a given project
+      operationId: getInvolvementsByProjectId
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        200:
+          description: 'Successfully retrieved involvements'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvolvementsList'
+        404:
+          description: 'Project not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /projects/{id}/issues:
+    get:
+      summary: Retrieve issues of a given project
+      operationId: getIssuesByProjectId
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        200:
+          description: 'Successfully retrieved issues'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueList'
         404:
           description: 'Project not found'
           content:
@@ -663,6 +699,14 @@ components:
       name: id
       required: true
       description: 'Issue unique identifier'
+      schema:
+        type: integer
+        format: int64
+    projectId:
+      in: path
+      name: id
+      required: true
+      description: 'Project unique identifier'
       schema:
         type: integer
         format: int64
