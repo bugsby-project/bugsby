@@ -154,6 +154,35 @@ class MasterServiceTest {
     }
 
     @TestFactory
+    Stream<DynamicTest> findUser() {
+        record TestCase(String name, Runnable initialiseMocks, Service service, long id, User expected, Class<? extends Exception> exception) {
+            public void check() {
+                TestCase.this.initialiseMocks.run();
+                try {
+                    User computed = TestCase.this.service.findUser(TestCase.this.id);
+                    Assertions.assertNull(TestCase.this.exception);
+                    assertEquals(TestCase.this.expected, computed);
+                } catch (Exception e) {
+                    Assertions.assertNotNull(TestCase.this.exception);
+                    assertEquals(TestCase.this.exception, e.getClass());
+                }
+            }
+        }
+
+        Runnable initMocksHappyPath = () -> when(userRepository.findById(any(Long.class)))
+                .thenReturn(Optional.of(USER));
+        Runnable initMocksNotFound = () -> when(userRepository.findById(any(Long.class)))
+                .thenReturn(Optional.empty());
+
+        var testCases = new TestCase[]{
+                new TestCase("Find user successfully", initMocksHappyPath, service, USER.getId(), USER, null),
+                new TestCase("Find user not existent", initMocksNotFound, service, 1L, null, UserNotFoundException.class)
+        };
+
+        return DynamicTest.stream(Stream.of(testCases), TestCase::name, TestCase::check);
+    }
+
+    @TestFactory
     Stream<DynamicTest> createProject() {
         record TestCase(String name, Runnable initialiseMocks, Service service, Project project, Project expected,
                         Class<? extends Exception> exception) {
