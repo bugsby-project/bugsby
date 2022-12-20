@@ -40,6 +40,14 @@ public interface Service {
     User login(String username) throws UserNotFoundException;
 
     /**
+     * Method for finding a user based on their unique identifier
+     * @param id, the id of the desired user
+     * @return the user with the given id
+     * @throws UserNotFoundException, if there is no user with the given id
+     */
+    User findUser(long id) throws UserNotFoundException;
+
+    /**
      * Method for creating a new account
      *
      * @param project, the project to add

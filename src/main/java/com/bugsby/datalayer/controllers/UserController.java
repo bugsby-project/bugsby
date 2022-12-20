@@ -59,6 +59,13 @@ public class UserController implements UsersApi {
     }
 
     @Override
+    public ResponseEntity<UserResponse> getUserById(Long id) {
+        User user = service.findUser(id);
+        UserResponse userResponse = userResponseMapper.apply(user);
+        return ResponseEntity.ok(userResponse);
+    }
+
+    @Override
     public ResponseEntity<UserResponse> getUserByUsername(String authorization, String username) {
         User user = service.login(username);
         UserResponse userResponse = userResponseMapper.apply(user);

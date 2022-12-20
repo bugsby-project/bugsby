@@ -74,6 +74,12 @@ public class MasterService implements Service {
     }
 
     @Override
+    public User findUser(long id) throws UserNotFoundException {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(Constants.USER_NOT_FOUND_ERROR_MESSAGE));
+    }
+
+    @Override
     @Transactional
     public Project createProject(Project project) {
         project.setCreatedAt(LocalDateTime.now());
