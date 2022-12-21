@@ -30,6 +30,7 @@ public class IssueRequestMapper implements Function<IssueRequest, Issue> {
         result.setReporter(new User(issueRequest.getReporterId()));
 
         result.setAssignee(Optional.ofNullable(issueRequest.getAssigneeId())
+                .filter(id -> id > 0)
                 .map(User::new)
                 .orElse(null));
         return result;
