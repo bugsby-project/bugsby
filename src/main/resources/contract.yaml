@@ -47,6 +47,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /ai/issues/duplicates:
+    post:
+      summary: Retrieve possible duplicate issues
+      operationId: retrieveDuplicateIssues
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueRequest'
+      responses:
+        200:
+          description: 'Successfully retrieved duplicate issues'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueList'
+        400:
+          description: 'Unable to retrieve duplicate issues'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /users/login:
     post:
@@ -317,31 +341,6 @@ paths:
                 $ref: '#/components/schemas/IssueList'
         400:
           description: 'Unable to retrieve issues'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /issues/duplicates:
-    get:
-      summary: Retrieve possible duplicate issues
-      operationId: retrieveDuplicateIssues
-      parameters:
-        - $ref: '#/components/parameters/jwt'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/IssueRequest'
-      responses:
-        200:
-          description: 'Successfully retrieved duplicate issues'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IssueList'
-        400:
-          description: 'Unable to retrieve duplicate issues'
           content:
             application/json:
               schema:

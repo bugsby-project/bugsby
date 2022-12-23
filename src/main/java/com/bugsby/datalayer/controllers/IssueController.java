@@ -63,17 +63,6 @@ public class IssueController implements IssuesApi {
     }
 
     @Override
-    public ResponseEntity<IssueList> retrieveDuplicateIssues(String authorization, IssueRequest body) {
-        Issue issue = issueRequestMapper.apply(body);
-        List<IssueResponse> responses = service.retrieveDuplicateIssues(issue)
-                .stream()
-                .map(issueResponseMapper)
-                .toList();
-        IssueList issueList = new IssueList().issues(responses);
-        return ResponseEntity.ok(issueList);
-    }
-
-    @Override
     public ResponseEntity<IssueResponse> updateIssue(String authorization, Long id, IssueRequest body) {
         String username = Utils.extractUsername(authorization);
         Issue issue = issueRequestMapper.apply(body);
