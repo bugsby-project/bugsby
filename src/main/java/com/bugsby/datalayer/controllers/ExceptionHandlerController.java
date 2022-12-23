@@ -56,4 +56,9 @@ public class ExceptionHandlerController {
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException e) {
         return new ResponseEntity<>(new ErrorResponse().message(SecurityConstants.AUTHENTICATION_FAILED_MESSAGE), HttpStatus.FORBIDDEN);
     }
+
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+        return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
 }
