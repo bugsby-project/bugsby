@@ -1,3 +1,5 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 buildscript {
     repositories {
         mavenCentral()
@@ -11,7 +13,7 @@ plugins {
     id 'java'
     id 'application'
     id 'org.springframework.boot' version '2.4.5'
-    id 'org.hidetake.swagger.generator' version '2.19.2'
+    id "org.openapi.generator" version "6.2.1"
 }
 
 group 'org.example'
@@ -65,32 +67,29 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.7.3'
     implementation 'javax.validation:validation-api:2.0.1.Final'
-    // https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-annotations
-    implementation group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.7'
-    // https://mvnrepository.com/artifact/org.threeten/threetenbp
-    implementation group: 'org.threeten', name: 'threetenbp', version: '1.6.4'
-    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.36'
+    // https://mvnrepository.com/artifact/org.openapitools/jackson-databind-nullable
+    implementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.4'
+    // https://mvnrepository.com/artifact/io.swagger.parser.v3/swagger-parser
+    implementation group: 'io.swagger.parser.v3', name: 'swagger-parser', version: '2.1.11'
 }
 
-swaggerSources {
-    bugsby {
-        inputFile = file("$rootDir/src/main/resources/contract.yaml")
-        code {
-            language = 'spring'
-            configFile = file("$rootDir/src/main/resources/swagger-config.json")
-            components = ['models', 'apis']
-
-            // https://github.com/int128/gradle-swagger-generator-plugin/issues/221
-            jvmArgs = ['--add-opens=java.base/java.util=ALL-UNNAMED']
-
-            dependsOn validation
-        }
-    }
+task buildBugsbyServer(type: GenerateTask) {
+    generatorName = "spring"
+    inputSpec = "$rootDir/src/main/resources/contract.yaml".toString()
+    additionalProperties = [
+            apiPackage: "com.bugsby.datalayer.swagger.api",
+            modelPackage: "com.bugsby.datalayer.swagger.model"
+    ]
+    outputDir = "$buildDir/generated/swagger".toString()
+    configOptions = [
+            dateLibrary: "java8",
+            "interfaceOnly": "true"
+    ]
 }
 
-compileJava.dependsOn swaggerSources.bugsby.code
-sourceSets.main.java.srcDir "${swaggerSources.bugsby.code.outputDir}/src/main/java"
-sourceSets.main.resources.srcDir "${swaggerSources.bugsby.code.outputDir}/src/main/resources"
+compileJava.dependsOn buildBugsbyServer
+
+sourceSets.main.java.srcDir "build/generated/swagger"
 
 test {
     useJUnitPlatform()
