@@ -1,0 +1,149 @@
+openapi: 3.0.0
+
+info:
+  description: API for Bugsby AI
+  version: 'v1.0'
+  title: Bugsby AI
+
+paths:
+  /suggested-severity:
+    get:
+      summary: Compute the suggested severity level based on the issue title
+      operationId: getSuggestedSeverity
+      parameters:
+        - $ref: '#/components/parameters/title'
+      responses:
+        200:
+          description: 'Successfully computed the severity level'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeverityLevelEnum'
+
+  /suggested-type:
+    get:
+      summary: Compute the suggested issue type based on the issue title
+      operationId: getSuggestedType
+      parameters:
+        - $ref: '#/components/parameters/title'
+      responses:
+        200:
+          description: 'Successfully computed the issue type'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueTypeEnum'
+
+  /is-offensive:
+    get:
+      summary: Compute the probability of a text to be offensive
+      operationId: getProbabilityIsOffensive
+      parameters:
+        - $ref: '#/components/parameters/text'
+      responses:
+        200:
+          description: 'Successfully computed the probability'
+          content:
+            application/json:
+              schema:
+                type: number
+                format: float
+
+  /duplicate-issues:
+    post:
+      summary: Retrieve possible duplicate issues
+      operationId: retrieveDuplicateIssues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DuplicateIssuesRequest'
+      responses:
+        200:
+          description: 'Successfully retrieved possible duplicates'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueObjectList'
+
+components:
+  schemas:
+    DuplicateIssuesRequest:
+      type: object
+      properties:
+        projectIssues:
+          $ref: '#/components/schemas/IssueObjectList'
+        issue:
+          $ref: '#/components/schemas/IssueObject'
+
+    IssueObject:
+      type: object
+      properties:
+        id:
+          description: 'Issue unique identifier'
+          type: integer
+          format: int64
+        title:
+          description: 'Issue title'
+          type: string
+        description:
+          description: 'Issue description'
+          type: string
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        type:
+          $ref: '#/components/schemas/IssueTypeEnum'
+
+    SeverityLevelEnum:
+      type: string
+      enum:
+        - severe
+        - non_severe
+    SeverityEnum:
+      type: string
+      enum:
+        - TRIVIAL
+        - MINOR
+        - MAJOR
+        - CRITICAL
+        - BLOCKER
+    StatusEnum:
+      type: string
+      enum:
+        - TO_DO
+        - IN_PROGRESS
+        - DONE
+    IssueTypeEnum:
+      type: string
+      enum:
+        - BUG
+        - DOCUMENTATION
+        - ENHANCEMENT
+        - INVALID
+        - WONT_FIX
+        - DUPLICATE
+        - HELP_WANTED
+        - QUESTION
+
+    IssueObjectList:
+      type: array
+      items:
+        $ref: '#/components/schemas/IssueObject'
+
+  parameters:
+    title:
+      in: query
+      name: title
+      description: 'The title of the issue'
+      required: true
+      schema:
+        type: string
+    text:
+      in: query
+      name: text
+      description: 'The text to analyze'
+      required: true
+      schema:
+        type: string
