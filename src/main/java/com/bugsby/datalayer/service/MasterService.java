@@ -58,8 +58,6 @@ public class MasterService implements Service {
         this.issueRepository = issueRepository;
         this.aiClient = aiClient;
         this.duplicateIssueRequestMapper = duplicateIssueRequestMapper;
-
-        aiClient.getApiClient().setBasePath(aiClientBasePath);
     }
 
     @Override
