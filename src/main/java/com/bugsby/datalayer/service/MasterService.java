@@ -21,7 +21,6 @@ import com.bugsby.datalayer.service.utils.Constants;
 import com.bugsby.datalayer.swagger.ai.api.DefaultApi;
 import com.bugsby.datalayer.swagger.ai.model.DuplicateIssuesRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -39,9 +38,6 @@ public class MasterService implements Service {
     private final IssueRepository issueRepository;
     private final com.bugsby.datalayer.swagger.ai.api.DefaultApi aiClient;
     private final BiFunction<List<Issue>, Issue, DuplicateIssuesRequest> duplicateIssueRequestMapper;
-
-    @Value("${ai.url}")
-    private String aiClientBasePath;
 
     private static final float PROBABILITY_OFFENSIVE_THRESHOLD = 0.8f;
 
