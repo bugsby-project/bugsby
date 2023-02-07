@@ -1,10 +1,8 @@
 package com.bugsby.datalayer.service;
 
-import com.bugsby.datalayer.service.utils.Constants;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
-import com.bugsby.datalayer.model.ProfanityLevel;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.SeverityLevel;
 import com.bugsby.datalayer.model.User;
@@ -12,8 +10,6 @@ import com.bugsby.datalayer.repository.InvolvementRepository;
 import com.bugsby.datalayer.repository.IssueRepository;
 import com.bugsby.datalayer.repository.ProjectRepository;
 import com.bugsby.datalayer.repository.UserRepository;
-import com.bugsby.datalayer.service.ai.Predictor;
-import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.service.exceptions.EmailTakenException;
 import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
 import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
@@ -21,7 +17,11 @@ import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
 import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
 import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
 import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
+import com.bugsby.datalayer.service.utils.Constants;
+import com.bugsby.datalayer.swagger.ai.api.DefaultApi;
+import com.bugsby.datalayer.swagger.ai.model.DuplicateIssuesRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 @org.springframework.stereotype.Service
 public class MasterService implements Service {
@@ -36,18 +37,29 @@ public class MasterService implements Service {
     private final ProjectRepository projectRepository;
     private final InvolvementRepository involvementRepository;
     private final IssueRepository issueRepository;
-    private final Predictor predictor;
+    private final com.bugsby.datalayer.swagger.ai.api.DefaultApi aiClient;
+    private final BiFunction<List<Issue>, Issue, DuplicateIssuesRequest> duplicateIssueRequestMapper;
 
-    public MasterService(@Autowired UserRepository userRepository,
-                         @Autowired ProjectRepository projectRepository,
-                         @Autowired InvolvementRepository involvementRepository,
-                         @Autowired IssueRepository issueRepository,
-                         @Autowired Predictor predictor) {
+    @Value("${ai.url}")
+    private String aiClientBasePath;
+
+    private static final float PROBABILITY_OFFENSIVE_THRESHOLD = 0.8f;
+
+    @Autowired
+    public MasterService(UserRepository userRepository,
+                         ProjectRepository projectRepository,
+                         InvolvementRepository involvementRepository,
+                         IssueRepository issueRepository,
+                         DefaultApi aiClient,
+                         BiFunction<List<Issue>, Issue, DuplicateIssuesRequest> duplicateIssueRequestMapper) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.involvementRepository = involvementRepository;
         this.issueRepository = issueRepository;
-        this.predictor = predictor;
+        this.aiClient = aiClient;
+        this.duplicateIssueRequestMapper = duplicateIssueRequestMapper;
+
+        aiClient.getApiClient().setBasePath(aiClientBasePath);
     }
 
     @Override
@@ -144,7 +156,7 @@ public class MasterService implements Service {
 
     @Override
     @Transactional
-    public Issue addIssue(Issue issue) throws UserNotInProjectException, UserNotFoundException, AiServiceException {
+    public Issue addIssue(Issue issue) throws UserNotInProjectException, UserNotFoundException {
         checkOffensiveLanguage(issue);
 
         // check if the reporter is a valid user
@@ -223,25 +235,33 @@ public class MasterService implements Service {
 
     @Override
     @Transactional
-    public SeverityLevel predictSeverityLevel(String title) throws AiServiceException {
-        return predictor.predictSeverityLevel(title);
+    public SeverityLevel predictSeverityLevel(String title) {
+        return SeverityLevel.valueOf(aiClient.getSuggestedSeverity(title).name());
     }
 
     @Override
     @Transactional
-    public IssueType predictIssueType(String title) throws AiServiceException {
-        return predictor.predictIssueType(title);
+    public IssueType predictIssueType(String title) {
+        return IssueType.valueOf(aiClient.getSuggestedType(title).name());
     }
 
     @Override
     @Transactional
-    public List<Issue> retrieveDuplicateIssues(Issue issue) throws ProjectNotFoundException, AiServiceException {
+    public List<Issue> retrieveDuplicateIssues(Issue issue) throws ProjectNotFoundException {
         List<Issue> projectIssues = projectRepository.findById(issue.getProject().getId())
                 .orElseThrow(() -> new ProjectNotFoundException("Project with id " + issue.getProject().getId() + " does not exist"))
                 .getIssues()
                 .stream()
                 .toList();
-        return predictor.detectDuplicateIssues(projectIssues, issue);
+        DuplicateIssuesRequest request = duplicateIssueRequestMapper.apply(projectIssues, issue);
+        return aiClient.retrieveDuplicateIssues(request)
+                .stream()
+                .map(com.bugsby.datalayer.swagger.ai.model.IssueObject::getId)
+                .map(id -> projectIssues.stream()
+                        .filter(projectIssue -> projectIssue.getId().equals(id))
+                        .findFirst()
+                        .orElseThrow(() -> new IssueNotFoundException("Issue with id " + id + " not found")))
+                .toList();
     }
 
     private boolean isParticipantInProject(Issue issue, String username) {
@@ -251,12 +271,12 @@ public class MasterService implements Service {
                 .anyMatch(involvement -> involvement.getUser().getUsername().equals(username));
     }
 
-    private void checkOffensiveLanguage(Issue issue) throws IllegalArgumentException, AiServiceException {
-        if (predictor.predictProfanityLevel(issue.getTitle()).equals(ProfanityLevel.OFFENSIVE)) {
+    private void checkOffensiveLanguage(Issue issue) throws IllegalArgumentException {
+        if (aiClient.getProbabilityIsOffensive(issue.getTitle()) > PROBABILITY_OFFENSIVE_THRESHOLD) {
             throw new IllegalArgumentException("Title contains offensive language");
         }
 
-        if (predictor.predictProfanityLevel(issue.getDescription()).equals(ProfanityLevel.OFFENSIVE)) {
+        if (aiClient.getProbabilityIsOffensive(issue.getTitle()) > PROBABILITY_OFFENSIVE_THRESHOLD) {
             throw new IllegalArgumentException("Description contains offensive language");
         }
     }

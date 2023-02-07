@@ -1,7 +1,6 @@
 package com.bugsby.datalayer.controllers;
 
 import com.bugsby.datalayer.controllers.security.SecurityConstants;
-import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.service.exceptions.EmailTakenException;
 import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
 import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
@@ -17,11 +16,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class ExceptionHandlerController {
-    @ExceptionHandler(value = AiServiceException.class)
-    public ResponseEntity<ErrorResponse> handleAiServiceException(AiServiceException e) {
-        return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
-    }
-
     @ExceptionHandler(value = UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException e) {
         return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.NOT_FOUND);

@@ -1,6 +1,11 @@
 package com.bugsby.datalayer.service;
 
-import com.bugsby.datalayer.service.exceptions.AiServiceException;
+import com.bugsby.datalayer.model.Involvement;
+import com.bugsby.datalayer.model.Issue;
+import com.bugsby.datalayer.model.IssueType;
+import com.bugsby.datalayer.model.Project;
+import com.bugsby.datalayer.model.SeverityLevel;
+import com.bugsby.datalayer.model.User;
 import com.bugsby.datalayer.service.exceptions.EmailTakenException;
 import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
 import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
@@ -8,12 +13,6 @@ import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
 import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
 import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
 import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
-import com.bugsby.datalayer.model.Involvement;
-import com.bugsby.datalayer.model.Issue;
-import com.bugsby.datalayer.model.IssueType;
-import com.bugsby.datalayer.model.Project;
-import com.bugsby.datalayer.model.SeverityLevel;
-import com.bugsby.datalayer.model.User;
 
 import java.util.List;
 import java.util.Set;
@@ -41,6 +40,7 @@ public interface Service {
 
     /**
      * Method for finding a user based on their unique identifier
+     *
      * @param id, the id of the desired user
      * @return the user with the given id
      * @throws UserNotFoundException, if there is no user with the given id
@@ -101,13 +101,12 @@ public interface Service {
      * Method for adding an issue
      *
      * @param issue, the issue to be added. It is expected that its reporter and project have at least a valid identifier among their fields
-     * @return - the issue with an identifier assigned, if the operation is successful
+     * @return - the issue with an identifier assigned, if the operation is successful (e.g. the issue does not contain offensive language in its title and description)
      * - null, otherwise
      * @throws UserNotInProjectException if the reporter or assignee of the issue is not a participant to the issue's project
      * @throws UserNotFoundException     if the reporter or assignee of the issue does not exist
-     * @throws AiServiceException        if there are errors while checking for the profanity of the language of the issue
      */
-    Issue addIssue(Issue issue) throws UserNotInProjectException, UserNotFoundException, AiServiceException;
+    Issue addIssue(Issue issue) throws UserNotInProjectException, UserNotFoundException;
 
     /**
      * Method for retrieving the assigned issues of a particular user, identified by their username, ordered by status in descending order
@@ -155,18 +154,16 @@ public interface Service {
      *
      * @param title, the title of the issue to predict the severity level to
      * @return the predicted severity level
-     * @throws AiServiceException if any errors occur during the prediction process
      */
-    SeverityLevel predictSeverityLevel(String title) throws AiServiceException;
+    SeverityLevel predictSeverityLevel(String title);
 
     /**
      * Method for predicting the label (type) of an issue, based on its title
      *
      * @param title, the title of the issue to predict the type to
      * @return the predicted issue type
-     * @throws AiServiceException if any errors occur during the prediction process
      */
-    IssueType predictIssueType(String title) throws AiServiceException;
+    IssueType predictIssueType(String title);
 
     /**
      * Method for retrieving the possible duplicate issues, in regard to another issue
@@ -174,7 +171,6 @@ public interface Service {
      * @param issue, the issue to retrieve the possible duplicates of
      * @return a {@code List} containing the possible duplicate issues of {@code issue}
      * @throws ProjectNotFoundException if the {@code issue}'s project id does not match a real project
-     * @throws AiServiceException       if any errors occur during the process
      */
-    List<Issue> retrieveDuplicateIssues(Issue issue) throws ProjectNotFoundException, AiServiceException;
+    List<Issue> retrieveDuplicateIssues(Issue issue) throws ProjectNotFoundException;
 }
