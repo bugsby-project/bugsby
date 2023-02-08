@@ -87,7 +87,24 @@ task buildBugsbyServer(type: GenerateTask) {
     ]
 }
 
-compileJava.dependsOn buildBugsbyServer
+task buildBugsbyAiClient(type: GenerateTask) {
+    generatorName = "java"
+    library = "resttemplate"
+    generateApiTests = false
+    generateModelTests = false
+    inputSpec = "$rootDir/src/main/resources/bugsbyAi.yaml".toString()
+    additionalProperties = [
+            apiPackage: "com.bugsby.datalayer.swagger.ai.api",
+            modelPackage: "com.bugsby.datalayer.swagger.ai.model"
+    ]
+    outputDir = "$buildDir/generated/swagger".toString()
+    configOptions = [
+            dateLibrary: "java8",
+            "interfaceOnly": "true"
+    ]
+}
+
+compileJava.dependsOn buildBugsbyServer, buildBugsbyAiClient
 
 sourceSets.main.java.srcDir "build/generated/swagger"
 

@@ -14,12 +14,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.RestClientException;
+
+import java.net.ConnectException;
 
 @ControllerAdvice
 public class ExceptionHandlerController {
+    @ExceptionHandler(value = ConnectException.class)
+    public ResponseEntity<ErrorResponse> handleConnectException(ConnectException e) {
+        return new ResponseEntity<>(new ErrorResponse().message("Connection refused"), HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
     @ExceptionHandler(value = AiServiceException.class)
     public ResponseEntity<ErrorResponse> handleAiServiceException(AiServiceException e) {
-        return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
+        return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(value = UserNotFoundException.class)

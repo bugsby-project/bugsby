@@ -3,7 +3,6 @@ package com.bugsby.datalayer.service;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
-import com.bugsby.datalayer.model.ProfanityLevel;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.Role;
 import com.bugsby.datalayer.model.Severity;
@@ -14,8 +13,6 @@ import com.bugsby.datalayer.repository.InvolvementRepository;
 import com.bugsby.datalayer.repository.IssueRepository;
 import com.bugsby.datalayer.repository.ProjectRepository;
 import com.bugsby.datalayer.repository.UserRepository;
-import com.bugsby.datalayer.service.ai.Predictor;
-import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.service.exceptions.EmailTakenException;
 import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
 import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
@@ -23,6 +20,9 @@ import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
 import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
 import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
 import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
+import com.bugsby.datalayer.service.mappers.DuplicateIssueRequestMapper;
+import com.bugsby.datalayer.service.mappers.IssueObjectMapper;
+import com.bugsby.datalayer.swagger.ai.model.SeverityLevelEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
@@ -31,7 +31,9 @@ import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -43,10 +45,9 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,7 +57,7 @@ class MasterServiceTest {
     private MasterService service;
 
     @Mock
-    private Predictor predictor;
+    private com.bugsby.datalayer.swagger.ai.api.DefaultApi aiClient;
 
     @Mock
     private UserRepository userRepository;
@@ -70,11 +71,19 @@ class MasterServiceTest {
     @Mock
     private IssueRepository issueRepository;
 
+    private final IssueObjectMapper issueObjectMapper = new IssueObjectMapper();
+
+    @Spy
+    private DuplicateIssueRequestMapper duplicateIssueRequestMapper = new DuplicateIssueRequestMapper(issueObjectMapper);
+
     private static final User USER = new User("a", "b", "AB", "BA", "a@g.com");
     private static final Project PROJECT = new Project(1L, "title", "description", LocalDateTime.now());
     private static final Project PROJECT_2 = new Project(2L, "title", "description", LocalDateTime.now());
     private static final Involvement INVOLVEMENT = new Involvement(Role.UX_DESIGNER, USER, PROJECT);
     private static final Issue ISSUE = new Issue("Title", "Desc", Severity.BLOCKER, Status.TO_DO, IssueType.DUPLICATE, INVOLVEMENT.getProject(), INVOLVEMENT.getUser());
+    private static final float PROBABILITY_IS_OFFENSIVE = 1.0f;
+    private static final float PROBABILITY_IS_NOT_OFFENSIVE = 0.0f;
+
 
     @BeforeEach
     void setUp() {
@@ -155,7 +164,8 @@ class MasterServiceTest {
 
     @TestFactory
     Stream<DynamicTest> findUser() {
-        record TestCase(String name, Runnable initialiseMocks, Service service, long id, User expected, Class<? extends Exception> exception) {
+        record TestCase(String name, Runnable initialiseMocks, Service service, long id, User expected,
+                        Class<? extends Exception> exception) {
             public void check() {
                 TestCase.this.initialiseMocks.run();
                 try {
@@ -403,23 +413,17 @@ class MasterServiceTest {
         }
 
         Runnable initMocksNonExistentReporter = () -> {
-            try {
-                when(predictor.predictProfanityLevel(any(String.class)))
-                        .thenReturn(ProfanityLevel.NOT_OFFENSIVE);
-            } catch (AiServiceException e) {
-                e.printStackTrace();
-            }
+            when(aiClient.getProbabilityIsOffensive(any(String.class)))
+                    .thenReturn(new com.bugsby.datalayer.swagger.ai.model.ProbabilityObject()
+                            .probability(PROBABILITY_IS_NOT_OFFENSIVE));
             when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.empty());
         };
 
         Runnable initMocksAddIssueSuccessfully = () -> {
-            try {
-                when(predictor.predictProfanityLevel(any(String.class)))
-                        .thenReturn(ProfanityLevel.NOT_OFFENSIVE);
-            } catch (AiServiceException e) {
-                e.printStackTrace();
-            }
+            when(aiClient.getProbabilityIsOffensive(any(String.class)))
+                    .thenReturn(new com.bugsby.datalayer.swagger.ai.model.ProbabilityObject()
+                            .probability(PROBABILITY_IS_NOT_OFFENSIVE));
             when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(USER));
             when(issueRepository.save(any(Issue.class)))
@@ -427,33 +431,24 @@ class MasterServiceTest {
         };
 
         Runnable initMocksOffensiveContent = () -> {
-            try {
-                when(predictor.predictProfanityLevel(any(String.class)))
-                        .thenReturn(ProfanityLevel.OFFENSIVE);
-            } catch (AiServiceException e) {
-                e.printStackTrace();
-            }
+            when(aiClient.getProbabilityIsOffensive(any(String.class)))
+                    .thenReturn(new com.bugsby.datalayer.swagger.ai.model.ProbabilityObject()
+                            .probability(PROBABILITY_IS_OFFENSIVE));
         };
 
         Runnable initMocksNonExistentAssignee = () -> {
-            try {
-                when(predictor.predictProfanityLevel(any(String.class)))
-                        .thenReturn(ProfanityLevel.NOT_OFFENSIVE);
-            } catch (AiServiceException e) {
-                e.printStackTrace();
-            }
+            when(aiClient.getProbabilityIsOffensive(any(String.class)))
+                    .thenReturn(new com.bugsby.datalayer.swagger.ai.model.ProbabilityObject()
+                            .probability(PROBABILITY_IS_NOT_OFFENSIVE));
             ISSUE.setAssignee(new User(Long.MAX_VALUE));
             when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.empty());
         };
 
         Runnable initMocksAssigneeNotInProject = () -> {
-            try {
-                when(predictor.predictProfanityLevel(any(String.class)))
-                        .thenReturn(ProfanityLevel.NOT_OFFENSIVE);
-            } catch (AiServiceException e) {
-                e.printStackTrace();
-            }
+            when(aiClient.getProbabilityIsOffensive(any(String.class)))
+                    .thenReturn(new com.bugsby.datalayer.swagger.ai.model.ProbabilityObject()
+                            .probability(PROBABILITY_IS_NOT_OFFENSIVE));
             when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(USER));
             ISSUE.setAssignee(USER);
@@ -608,59 +603,47 @@ class MasterServiceTest {
 
     @Test
     void predictSeverityLevel() {
-        try {
-            when(predictor.predictSeverityLevel(any(String.class)))
-                    .thenReturn(SeverityLevel.SEVERE);
-            assertEquals(SeverityLevel.SEVERE, service.predictSeverityLevel("The database is lost"));
-        } catch (AiServiceException e) {
-            fail();
-        }
+        when(aiClient.getSuggestedSeverity(any(String.class)))
+                .thenReturn(new com.bugsby.datalayer.swagger.ai.model.SeverityLevelObject()
+                        .severity(SeverityLevelEnum.SEVERE));
+        assertEquals(SeverityLevel.SEVERE, service.predictSeverityLevel("The database is lost"));
     }
 
     @Test
     void predictSeverityLevel_throwsError() {
-        try {
-            when(predictor.predictSeverityLevel(any(String.class)))
-                    .thenThrow(AiServiceException.class);
-            assertThrows(AiServiceException.class, () -> service.predictSeverityLevel(""));
-        } catch (AiServiceException e) {
-            assertTrue(true);
-        }
+        when(aiClient.getSuggestedSeverity(any(String.class)))
+                .thenThrow(RestClientException.class);
+        assertThrows(RestClientException.class, () -> service.predictSeverityLevel(""));
     }
 
     @Test
     void predictIssueType() {
-        try {
-            when(predictor.predictIssueType(any(String.class)))
-                    .thenReturn(IssueType.BUG);
-            assertEquals(IssueType.BUG, service.predictIssueType("this doesn't work"));
-        } catch (AiServiceException e) {
-            fail();
-        }
+        when(aiClient.getSuggestedType(any(String.class)))
+                .thenReturn(new com.bugsby.datalayer.swagger.ai.model.IssueTypeObject()
+                        .issueType(com.bugsby.datalayer.swagger.ai.model.IssueTypeEnum.BUG));
+        assertEquals(IssueType.BUG, service.predictIssueType("this doesn't work"));
     }
 
     @Test
     void predictIssueType_throwsError() {
-        try {
-            when(predictor.predictIssueType(any(String.class)))
-                    .thenThrow(AiServiceException.class);
-            assertThrows(AiServiceException.class, () -> service.predictIssueType("this doesn't work"));
-        } catch (AiServiceException e) {
-            assertTrue(true);
-        }
+        when(aiClient.getSuggestedType(any(String.class)))
+                .thenThrow(RestClientException.class);
+        assertThrows(RestClientException.class, () -> service.predictIssueType("this doesn't work"));
     }
 
     @Test
     void retrieveDuplicateIssues() {
-        when(projectRepository.findById(any(Long.class)))
-                .thenReturn(Optional.of(PROJECT));
-        try {
-            when(predictor.detectDuplicateIssues(any(List.class), any(Issue.class)))
-                    .thenReturn(List.of(ISSUE));
-            assertEquals(List.of(ISSUE), service.retrieveDuplicateIssues(ISSUE));
-        } catch (AiServiceException | ProjectNotFoundException e) {
-            fail();
-        }
+        PROJECT.setIssues(Set.of(ISSUE));
+        doReturn(Optional.of(PROJECT))
+                .when(projectRepository)
+                .findById(any(Long.class));
+        doReturn(new com.bugsby.datalayer.swagger.ai.model.IssueObjectList()
+                .issues(Stream.of(ISSUE).map(issueObjectMapper).toList()))
+                .when(aiClient)
+                .retrieveDuplicateIssues(any(com.bugsby.datalayer.swagger.ai.model.DuplicateIssuesRequest.class));
+        assertEquals(List.of(ISSUE), service.retrieveDuplicateIssues(ISSUE));
+
+        PROJECT.setIssues(Collections.emptySet());
     }
 
     @Test
