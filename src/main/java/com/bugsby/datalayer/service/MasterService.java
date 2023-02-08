@@ -10,6 +10,7 @@ import com.bugsby.datalayer.repository.InvolvementRepository;
 import com.bugsby.datalayer.repository.IssueRepository;
 import com.bugsby.datalayer.repository.ProjectRepository;
 import com.bugsby.datalayer.repository.UserRepository;
+import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.service.exceptions.EmailTakenException;
 import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
 import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
@@ -24,7 +25,6 @@ import com.bugsby.datalayer.swagger.ai.model.IssueTypeEnum;
 import com.bugsby.datalayer.swagger.ai.model.SeverityLevelEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -237,7 +237,7 @@ public class MasterService implements Service {
         String value = Optional.ofNullable(aiClient.getSuggestedSeverity(title).getSeverity())
                 .map(SeverityLevelEnum::getValue)
                 .map(String::toUpperCase)
-                .orElseThrow(() -> new RestClientException("Unable to compute severity level"));
+                .orElseThrow(() -> new AiServiceException("Unable to compute severity level"));
         return SeverityLevel.valueOf(value);
     }
 
@@ -247,7 +247,7 @@ public class MasterService implements Service {
         String value = Optional.ofNullable(aiClient.getSuggestedType(title).getIssueType())
                 .map(IssueTypeEnum::getValue)
                 .map(String::toUpperCase)
-                .orElseThrow(() -> new RestClientException("Unable to compute issue type"));
+                .orElseThrow(() -> new AiServiceException("Unable to compute issue type"));
         return IssueType.valueOf(value);
     }
 
@@ -281,14 +281,14 @@ public class MasterService implements Service {
     private void checkOffensiveLanguage(Issue issue) throws IllegalArgumentException {
         float probabilityOffensiveTitle = Optional.ofNullable(aiClient.getProbabilityIsOffensive(issue.getTitle()))
                 .map(com.bugsby.datalayer.swagger.ai.model.ProbabilityObject::getProbability)
-                .orElseThrow(() -> new RestClientException("Unable to compute probability for offensive title"));
+                .orElseThrow(() -> new AiServiceException("Unable to compute probability for offensive title"));
         if (probabilityOffensiveTitle > PROBABILITY_OFFENSIVE_THRESHOLD) {
             throw new IllegalArgumentException("Title contains offensive language");
         }
 
         float probabilityOffensiveDescription = Optional.ofNullable(aiClient.getProbabilityIsOffensive(issue.getDescription()))
                 .map(com.bugsby.datalayer.swagger.ai.model.ProbabilityObject::getProbability)
-                .orElseThrow(() -> new RestClientException("Unable to compute probability for offensive title"));
+                .orElseThrow(() -> new AiServiceException("Unable to compute probability for offensive title"));
         if (probabilityOffensiveDescription > PROBABILITY_OFFENSIVE_THRESHOLD) {
             throw new IllegalArgumentException("Description contains offensive language");
         }
