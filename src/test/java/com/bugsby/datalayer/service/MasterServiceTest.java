@@ -414,14 +414,16 @@ class MasterServiceTest {
 
         Runnable initMocksNonExistentReporter = () -> {
             when(aiClient.getProbabilityIsOffensive(any(String.class)))
-                    .thenReturn(PROBABILITY_IS_NOT_OFFENSIVE);
+                    .thenReturn(new com.bugsby.datalayer.swagger.ai.model.ProbabilityObject()
+                            .probability(PROBABILITY_IS_NOT_OFFENSIVE));
             when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.empty());
         };
 
         Runnable initMocksAddIssueSuccessfully = () -> {
             when(aiClient.getProbabilityIsOffensive(any(String.class)))
-                    .thenReturn(PROBABILITY_IS_NOT_OFFENSIVE);
+                    .thenReturn(new com.bugsby.datalayer.swagger.ai.model.ProbabilityObject()
+                            .probability(PROBABILITY_IS_NOT_OFFENSIVE));
             when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(USER));
             when(issueRepository.save(any(Issue.class)))
@@ -430,12 +432,14 @@ class MasterServiceTest {
 
         Runnable initMocksOffensiveContent = () -> {
             when(aiClient.getProbabilityIsOffensive(any(String.class)))
-                    .thenReturn(PROBABILITY_IS_OFFENSIVE);
+                    .thenReturn(new com.bugsby.datalayer.swagger.ai.model.ProbabilityObject()
+                            .probability(PROBABILITY_IS_OFFENSIVE));
         };
 
         Runnable initMocksNonExistentAssignee = () -> {
             when(aiClient.getProbabilityIsOffensive(any(String.class)))
-                    .thenReturn(PROBABILITY_IS_NOT_OFFENSIVE);
+                    .thenReturn(new com.bugsby.datalayer.swagger.ai.model.ProbabilityObject()
+                            .probability(PROBABILITY_IS_NOT_OFFENSIVE));
             ISSUE.setAssignee(new User(Long.MAX_VALUE));
             when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.empty());
@@ -443,7 +447,8 @@ class MasterServiceTest {
 
         Runnable initMocksAssigneeNotInProject = () -> {
             when(aiClient.getProbabilityIsOffensive(any(String.class)))
-                    .thenReturn(PROBABILITY_IS_NOT_OFFENSIVE);
+                    .thenReturn(new com.bugsby.datalayer.swagger.ai.model.ProbabilityObject()
+                            .probability(PROBABILITY_IS_NOT_OFFENSIVE));
             when(userRepository.findById(any(Long.class)))
                     .thenReturn(Optional.of(USER));
             ISSUE.setAssignee(USER);
@@ -599,7 +604,8 @@ class MasterServiceTest {
     @Test
     void predictSeverityLevel() {
         when(aiClient.getSuggestedSeverity(any(String.class)))
-                .thenReturn(SeverityLevelEnum.SEVERE);
+                .thenReturn(new com.bugsby.datalayer.swagger.ai.model.SeverityLevelObject()
+                        .severity(SeverityLevelEnum.SEVERE));
         assertEquals(SeverityLevel.SEVERE, service.predictSeverityLevel("The database is lost"));
     }
 
@@ -613,7 +619,8 @@ class MasterServiceTest {
     @Test
     void predictIssueType() {
         when(aiClient.getSuggestedType(any(String.class)))
-                .thenReturn(com.bugsby.datalayer.swagger.ai.model.IssueTypeEnum.BUG);
+                .thenReturn(new com.bugsby.datalayer.swagger.ai.model.IssueTypeObject()
+                        .issueType(com.bugsby.datalayer.swagger.ai.model.IssueTypeEnum.BUG));
         assertEquals(IssueType.BUG, service.predictIssueType("this doesn't work"));
     }
 
@@ -630,7 +637,8 @@ class MasterServiceTest {
         doReturn(Optional.of(PROJECT))
                 .when(projectRepository)
                 .findById(any(Long.class));
-        doReturn(Stream.of(ISSUE).map(issueObjectMapper).toList())
+        doReturn(new com.bugsby.datalayer.swagger.ai.model.IssueObjectList()
+                .issues(Stream.of(ISSUE).map(issueObjectMapper).toList()))
                 .when(aiClient)
                 .retrieveDuplicateIssues(any(com.bugsby.datalayer.swagger.ai.model.DuplicateIssuesRequest.class));
         assertEquals(List.of(ISSUE), service.retrieveDuplicateIssues(ISSUE));

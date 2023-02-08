@@ -20,10 +20,14 @@ import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
 import com.bugsby.datalayer.service.utils.Constants;
 import com.bugsby.datalayer.swagger.ai.api.DefaultApi;
 import com.bugsby.datalayer.swagger.ai.model.DuplicateIssuesRequest;
+import com.bugsby.datalayer.swagger.ai.model.IssueTypeEnum;
+import com.bugsby.datalayer.swagger.ai.model.SeverityLevelEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -230,13 +234,21 @@ public class MasterService implements Service {
     @Override
     @Transactional
     public SeverityLevel predictSeverityLevel(String title) {
-        return SeverityLevel.valueOf(aiClient.getSuggestedSeverity(title).name());
+        String value = Optional.ofNullable(aiClient.getSuggestedSeverity(title).getSeverity())
+                .map(SeverityLevelEnum::getValue)
+                .map(String::toUpperCase)
+                .orElseThrow(() -> new RestClientException("Unable to compute severity level"));
+        return SeverityLevel.valueOf(value);
     }
 
     @Override
     @Transactional
     public IssueType predictIssueType(String title) {
-        return IssueType.valueOf(aiClient.getSuggestedType(title).name());
+        String value = Optional.ofNullable(aiClient.getSuggestedType(title).getIssueType())
+                .map(IssueTypeEnum::getValue)
+                .map(String::toUpperCase)
+                .orElseThrow(() -> new RestClientException("Unable to compute issue type"));
+        return IssueType.valueOf(value);
     }
 
     @Override
@@ -248,14 +260,15 @@ public class MasterService implements Service {
                 .stream()
                 .toList();
         DuplicateIssuesRequest request = duplicateIssueRequestMapper.apply(projectIssues, issue);
-        return aiClient.retrieveDuplicateIssues(request)
-                .stream()
-                .map(com.bugsby.datalayer.swagger.ai.model.IssueObject::getId)
-                .map(id -> projectIssues.stream()
-                        .filter(projectIssue -> projectIssue.getId().equals(id))
-                        .findFirst()
-                        .orElseThrow(() -> new IssueNotFoundException("Issue with id " + id + " not found")))
-                .toList();
+        return Optional.ofNullable(aiClient.retrieveDuplicateIssues(request).getIssues())
+                .map(issueObjects -> issueObjects.stream()
+                        .map(com.bugsby.datalayer.swagger.ai.model.IssueObject::getId)
+                        .map(id -> projectIssues.stream()
+                                .filter(projectIssue -> projectIssue.getId().equals(id))
+                                .findFirst()
+                                .orElseThrow(() -> new IssueNotFoundException("Issue with id " + id + " not found")))
+                        .toList())
+                .orElse(Collections.emptyList());
     }
 
     private boolean isParticipantInProject(Issue issue, String username) {
@@ -266,11 +279,17 @@ public class MasterService implements Service {
     }
 
     private void checkOffensiveLanguage(Issue issue) throws IllegalArgumentException {
-        if (aiClient.getProbabilityIsOffensive(issue.getTitle()) > PROBABILITY_OFFENSIVE_THRESHOLD) {
+        float probabilityOffensiveTitle = Optional.ofNullable(aiClient.getProbabilityIsOffensive(issue.getTitle()))
+                .map(com.bugsby.datalayer.swagger.ai.model.ProbabilityObject::getProbability)
+                .orElseThrow(() -> new RestClientException("Unable to compute probability for offensive title"));
+        if (probabilityOffensiveTitle > PROBABILITY_OFFENSIVE_THRESHOLD) {
             throw new IllegalArgumentException("Title contains offensive language");
         }
 
-        if (aiClient.getProbabilityIsOffensive(issue.getTitle()) > PROBABILITY_OFFENSIVE_THRESHOLD) {
+        float probabilityOffensiveDescription = Optional.ofNullable(aiClient.getProbabilityIsOffensive(issue.getDescription()))
+                .map(com.bugsby.datalayer.swagger.ai.model.ProbabilityObject::getProbability)
+                .orElseThrow(() -> new RestClientException("Unable to compute probability for offensive title"));
+        if (probabilityOffensiveDescription > PROBABILITY_OFFENSIVE_THRESHOLD) {
             throw new IllegalArgumentException("Description contains offensive language");
         }
     }
