@@ -9,7 +9,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -37,6 +39,11 @@ public class Project implements Entity<Long>, Cloneable {
     private Set<Involvement> involvements = new HashSet<>();
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "project")
     private Set<Issue> issues = new HashSet<>();
+    @OneToOne
+    @JoinColumn(name = "github_project_details_id")
+    private GitHubProjectDetails gitHubProjectDetails;
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "project")
+    private Set<WorkflowRun> workflowRuns;
 
     public Project() {
     }
@@ -138,5 +145,21 @@ public class Project implements Entity<Long>, Cloneable {
 
     public void setIssues(Set<Issue> issues) {
         this.issues = issues;
+    }
+
+    public GitHubProjectDetails getGitHubProjectDetails() {
+        return gitHubProjectDetails;
+    }
+
+    public void setGitHubProjectDetails(GitHubProjectDetails gitHubProjectDetails) {
+        this.gitHubProjectDetails = gitHubProjectDetails;
+    }
+
+    public Set<WorkflowRun> getWorkflowRuns() {
+        return workflowRuns;
+    }
+
+    public void setWorkflowRuns(Set<WorkflowRun> workflowRuns) {
+        this.workflowRuns = workflowRuns;
     }
 }
