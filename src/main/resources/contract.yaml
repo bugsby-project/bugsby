@@ -513,6 +513,15 @@ components:
           description: 'The unique identifier of the user who makes the request'
         role:
           $ref: '#/components/schemas/Role'
+        repositoryName:
+          type: string
+          description: 'GitHub repository name'
+        repositoryOwner:
+          type: string
+          description: 'GitHub repository owner'
+        token:
+          type: string
+          description: 'GitHub token with at least repository access'
     ProjectResponse:
       type: object
       properties:
@@ -529,6 +538,15 @@ components:
         createdAt:
           type: string
           format: date-time
+        repositoryName:
+          type: string
+          description: 'GitHub repository name'
+        repositoryOwner:
+          type: string
+          description: 'GitHub repository owner'
+        token:
+          type: string
+          description: 'GitHub token with at least repository access'
     IssueRequest:
       type: object
       properties:

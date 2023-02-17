@@ -39,7 +39,7 @@ public class Project implements Entity<Long>, Cloneable {
     private Set<Involvement> involvements = new HashSet<>();
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "project")
     private Set<Issue> issues = new HashSet<>();
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "github_project_details_id")
     private GitHubProjectDetails gitHubProjectDetails;
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "project")

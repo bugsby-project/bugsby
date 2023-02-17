@@ -1,5 +1,6 @@
 package com.bugsby.datalayer.controllers.mappers;
 
+import com.bugsby.datalayer.model.GitHubProjectDetails;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.Role;
@@ -17,6 +18,13 @@ public class ProjectRequestMapper implements Function<ProjectRequest, Project> {
         Project project = new Project();
         project.setTitle(projectRequest.getTitle());
         project.setDescription(projectRequest.getDescription());
+
+        GitHubProjectDetails gitHubProjectDetails = new GitHubProjectDetails(null,
+                projectRequest.getRepositoryName(),
+                projectRequest.getRepositoryOwner(),
+                projectRequest.getToken(),
+                project);
+        project.setGitHubProjectDetails(gitHubProjectDetails);
 
         Involvement involvement = new Involvement();
         involvement.setProject(project);
