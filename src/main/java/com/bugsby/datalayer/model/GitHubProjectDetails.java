@@ -92,4 +92,12 @@ public class GitHubProjectDetails implements Entity<Long> {
                 ", project=" + project +
                 '}';
     }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
 }

@@ -48,13 +48,22 @@ public interface Service {
     User findUser(long id) throws UserNotFoundException;
 
     /**
-     * Method for creating a new account
+     * Method for creating a new project
      *
      * @param project, the project to add
      * @return - the project with an assigned identifier, if the operation is successful
      * - null, otherwise
      */
     Project createProject(Project project);
+
+    /**
+     * Method for updating a project
+     *
+     * @param projectId, the ID of the project to update
+     * @param updateProjectRequest, the project details to update
+     * @return the project with the updated details
+     */
+    Project updateProject(Long projectId, com.bugsby.datalayer.swagger.model.UpdateProjectRequest updateProjectRequest);
 
     /**
      * Method for retrieving the information of a project, based on its id

@@ -12,6 +12,7 @@ import com.bugsby.datalayer.swagger.model.IssueList;
 import com.bugsby.datalayer.swagger.model.IssueResponse;
 import com.bugsby.datalayer.swagger.model.ProjectRequest;
 import com.bugsby.datalayer.swagger.model.ProjectResponse;
+import com.bugsby.datalayer.swagger.model.UpdateProjectRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,5 +74,12 @@ public class ProjectController implements ProjectsApi {
                 .map(projectResponseMapper)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ProjectNotFoundException(PROJECT_DOES_NOT_EXIST_MESSAGE));
+    }
+
+    @Override
+    public ResponseEntity<ProjectResponse> updateProjectById(String authorization, Long id, UpdateProjectRequest updateProjectRequest) {
+        Project project = service.updateProject(id, updateProjectRequest);
+        ProjectResponse projectResponse = projectResponseMapper.apply(project);
+        return ResponseEntity.ok(projectResponse);
     }
 }
