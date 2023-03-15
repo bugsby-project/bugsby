@@ -259,6 +259,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update details for a particular project
+      operationId: updateProjectById
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        200:
+          description: 'Successfully updated project'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+
 
   /projects/{id}/involvements:
     get:
@@ -513,6 +532,33 @@ components:
           description: 'The unique identifier of the user who makes the request'
         role:
           $ref: '#/components/schemas/Role'
+        repositoryName:
+          type: string
+          description: 'GitHub repository name'
+        repositoryOwner:
+          type: string
+          description: 'GitHub repository owner'
+        token:
+          type: string
+          description: 'GitHub token with at least repository access'
+    UpdateProjectRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: 'Project title'
+        description:
+          type: string
+          description: 'Project description'
+        repositoryName:
+          type: string
+          description: 'GitHub repository name'
+        repositoryOwner:
+          type: string
+          description: 'GitHub repository owner'
+        token:
+          type: string
+          description: 'GitHub token with at least repository access'
     ProjectResponse:
       type: object
       properties:
@@ -529,6 +575,15 @@ components:
         createdAt:
           type: string
           format: date-time
+        repositoryName:
+          type: string
+          description: 'GitHub repository name'
+        repositoryOwner:
+          type: string
+          description: 'GitHub repository owner'
+        token:
+          type: string
+          description: 'GitHub token with at least repository access'
     IssueRequest:
       type: object
       properties:

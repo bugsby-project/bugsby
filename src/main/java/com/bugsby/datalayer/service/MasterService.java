@@ -1,5 +1,6 @@
 package com.bugsby.datalayer.service;
 
+import com.bugsby.datalayer.model.GitHubProjectDetails;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
@@ -96,6 +97,26 @@ public class MasterService implements Service {
         project.getInvolvements()
                 .forEach(involvement -> involvement.setProject(project));
         return projectRepository.save(project);
+    }
+
+    @Override
+    public Project updateProject(Long projectId, com.bugsby.datalayer.swagger.model.UpdateProjectRequest updateProjectRequest) {
+        return projectRepository.findById(projectId)
+                .map(project -> {
+                    project.setTitle(updateProjectRequest.getTitle());
+                    project.setDescription(updateProjectRequest.getDescription());
+
+                    GitHubProjectDetails gitHubProjectDetails = Optional.ofNullable(project.getGitHubProjectDetails())
+                                    .orElse(new GitHubProjectDetails());
+                    gitHubProjectDetails.setRepositoryOwner(updateProjectRequest.getRepositoryOwner());
+                    gitHubProjectDetails.setRepositoryName(updateProjectRequest.getRepositoryName());
+                    gitHubProjectDetails.setToken(updateProjectRequest.getToken());
+                    project.setGitHubProjectDetails(gitHubProjectDetails);
+
+                    return project;
+                })
+                .map(projectRepository::save)
+                .orElseThrow(() -> new ProjectNotFoundException("Project does not exist"));
     }
 
     @Override
