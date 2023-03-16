@@ -44,7 +44,6 @@ public class WorkflowRunJob {
 
     @Scheduled(fixedDelay = 3, timeUnit = TimeUnit.MINUTES)
     public void retrieveWorkflows() {
-        // todo TEST - my data doesn't have logs available anymore
         StreamSupport.stream(projectRepository.findAll().spliterator(), false)
                 .filter(this::projectWithGitHubActionsEnabled)
                 .map(project -> {
