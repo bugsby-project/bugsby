@@ -6,6 +6,8 @@ import com.bugsby.datalayer.repository.ProjectRepository;
 import com.bugsby.datalayer.swagger.github.api.ActionsApi;
 import net.lingala.zip4j.ZipFile;
 import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
@@ -33,6 +35,7 @@ import java.util.stream.StreamSupport;
 @Configuration
 @EnableScheduling
 public class WorkflowRunJob {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowRunJob.class);
     private final ProjectRepository projectRepository;
     private final com.bugsby.datalayer.swagger.github.api.ActionsApi actionsApi;
 
@@ -49,30 +52,36 @@ public class WorkflowRunJob {
                 .map(project -> {
                     actionsApi.getApiClient().setBearerToken(project.getGitHubProjectDetails().getToken());
 
+                    List<com.bugsby.datalayer.swagger.github.model.WorkflowRun> workflowRuns;
+                    try {
+                        workflowRuns = actionsApi.actionsListWorkflowRunsForRepo(
+                                        project.getGitHubProjectDetails().getRepositoryOwner(),
+                                        project.getGitHubProjectDetails().getRepositoryName(),
+                                        null, null, null, null,
+                                        null, null, null,
+                                        null, null, null
+                                )
+                                .getWorkflowRuns();
+                    } catch (Exception e) {
+                        LOGGER.warn(e.getMessage());
+                        workflowRuns = Collections.emptyList();
+                    }
+
                     // retrieve all workflow runs from the API
-                    return Pair.with(project,
-                            actionsApi.actionsListWorkflowRunsForRepo(
-                                            project.getGitHubProjectDetails().getRepositoryOwner(),
-                                            project.getGitHubProjectDetails().getRepositoryName(),
-                                            null, null, null, null,
-                                            null, null, null,
-                                            null, null, null
-                                    )
-                                    .getWorkflowRuns()
-                                    .stream()
-                                    // filter workflow runs which have already been verified
-                                    .filter(workflowRun -> project.getWorkflowRuns().stream()
-                                            .noneMatch(workflowRunVerified -> workflowRunVerified.getId().equals(workflowRun.getId())))
-                                    // filter workflow runs which have failed
-                                    .filter(workflowRun -> "failure".equals(workflowRun.getConclusion()))
-                                    .toList());
+                    return Pair.with(project, workflowRuns.stream()
+                            // filter workflow runs which have already been verified
+                            .filter(workflowRun -> project.getWorkflowRuns().stream()
+                                    .noneMatch(workflowRunVerified -> workflowRunVerified.getId().equals(workflowRun.getId())))
+                            // filter workflow runs which have failed
+                            .filter(workflowRun -> "failure".equals(workflowRun.getConclusion()))
+                            .toList());
                 })
                 .filter(pair -> !pair.getValue1().isEmpty())
                 .forEach(pair -> {
                     pair.getValue1().stream()
                             .map(workflowRun -> this.downloadWorkflowRunLogs(pair.getValue0(), workflowRun))
                             // todo send log file for analysis
-                            .forEach(System.out::println);
+                            .forEach(content -> LOGGER.info(content.toString()));
 
                     // update workflow runs which have been verified
                     List<WorkflowRun> newWorkflowRuns = pair.getValue1().stream()
