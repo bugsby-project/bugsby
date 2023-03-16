@@ -71,6 +71,10 @@ dependencies {
     implementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.4'
     // https://mvnrepository.com/artifact/io.swagger.parser.v3/swagger-parser
     implementation group: 'io.swagger.parser.v3', name: 'swagger-parser', version: '2.1.11'
+    // https://mvnrepository.com/artifact/net.lingala.zip4j/zip4j
+    implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '2.11.4'
+    // https://mvnrepository.com/artifact/org.javatuples/javatuples
+    implementation group: 'org.javatuples', name: 'javatuples', version: '1.2'
 }
 
 task buildBugsbyServer(type: GenerateTask) {
@@ -104,8 +108,25 @@ task buildBugsbyAiClient(type: GenerateTask) {
     ]
 }
 
-compileJava.dependsOn buildBugsbyServer, buildBugsbyAiClient
+task buildGitHubClient(type: GenerateTask) {
+    generatorName = "java"
+    library = "resttemplate"
+    generateApiTests = false
+    generateModelTests = false
+    inputSpec = "$rootDir/src/main/resources/githubApi.yaml".toString()
+    additionalProperties = [
+            apiPackage: "com.bugsby.datalayer.swagger.github.api",
+            modelPackage: "com.bugsby.datalayer.swagger.github.model"
+    ]
+    outputDir = "$buildDir/generated/swagger".toString()
+    configOptions = [
+            dateLibrary: "java8",
+            "interfaceOnly": "true",
+            openApiNullable: "false"
+    ]
+}
 
+compileJava.dependsOn buildBugsbyServer, buildBugsbyAiClient, buildGitHubClient
 sourceSets.main.java.srcDir "build/generated/swagger"
 
 test {
