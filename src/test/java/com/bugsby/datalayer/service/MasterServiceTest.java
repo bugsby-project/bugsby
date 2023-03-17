@@ -22,6 +22,7 @@ import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
 import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
 import com.bugsby.datalayer.service.mappers.DuplicateIssueRequestMapper;
 import com.bugsby.datalayer.service.mappers.IssueObjectMapper;
+import com.bugsby.datalayer.service.validators.GitHubProjectDetailsValidator;
 import com.bugsby.datalayer.swagger.ai.model.SeverityLevelEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,6 +71,9 @@ class MasterServiceTest {
 
     @Mock
     private IssueRepository issueRepository;
+
+    @Mock
+    private GitHubProjectDetailsValidator gitHubProjectDetailsValidator;
 
     private final IssueObjectMapper issueObjectMapper = new IssueObjectMapper();
 
@@ -209,8 +213,12 @@ class MasterServiceTest {
             }
         }
 
-        Runnable initMocksCreateProjectSuccessfully = () -> when(projectRepository.save(PROJECT))
-                .thenReturn(PROJECT);
+        Runnable initMocksCreateProjectSuccessfully = () -> {
+            when(projectRepository.save(PROJECT))
+                    .thenReturn(PROJECT);
+            doNothing().when(gitHubProjectDetailsValidator)
+                    .validate(null);
+        };
 
         var testCases = new TestCase[]{
                 new TestCase("Create project successfully", initMocksCreateProjectSuccessfully, service, PROJECT, PROJECT, null)
