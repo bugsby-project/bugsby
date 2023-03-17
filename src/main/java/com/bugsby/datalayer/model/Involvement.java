@@ -20,7 +20,7 @@ import java.util.Objects;
 )
 @javax.persistence.Entity
 @Table(name = "involvements")
-public class Involvement implements Entity<Long>, Cloneable {
+public class Involvement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -55,12 +55,10 @@ public class Involvement implements Entity<Long>, Cloneable {
         this.project = project;
     }
 
-    @Override
     public Long getId() {
         return id;
     }
 
-    @Override
     public void setId(Long id) {
         this.id = id;
     }
@@ -108,14 +106,5 @@ public class Involvement implements Entity<Long>, Cloneable {
                 "id=" + id +
                 ", role=" + role +
                 '}';
-    }
-
-    @Override
-    public Involvement clone() {
-        try {
-            return (Involvement) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
     }
 }
