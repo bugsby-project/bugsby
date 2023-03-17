@@ -5,6 +5,11 @@ package com.bugsby.datalayer.validator;
  */
 public class ErrorMessages {
 
+    private ErrorMessages() {
+        throw new IllegalStateException("Utility class");
+    }
+
+
     /**
      * Error message for when the username of n {@code User} is invalid
      */

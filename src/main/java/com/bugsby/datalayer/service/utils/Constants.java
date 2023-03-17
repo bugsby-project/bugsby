@@ -2,6 +2,10 @@ package com.bugsby.datalayer.service.utils;
 
 public class Constants {
 
+    private Constants() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Error message displayed when creating a new account, if the respective username is already in use
      */

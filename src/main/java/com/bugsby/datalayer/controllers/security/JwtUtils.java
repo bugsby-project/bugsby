@@ -11,6 +11,11 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public class JwtUtils {
+
+    private JwtUtils() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Method for extracting the username from a JSON Web Token
      *

@@ -5,7 +5,6 @@ import com.bugsby.datalayer.model.User;
 import com.bugsby.datalayer.swagger.model.IssueResponse;
 import com.bugsby.datalayer.swagger.model.IssueType;
 import com.bugsby.datalayer.swagger.model.Severity;
-import com.bugsby.datalayer.swagger.model.SeverityLevel;
 import com.bugsby.datalayer.swagger.model.Status;
 import org.springframework.stereotype.Component;
 
