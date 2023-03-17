@@ -3,6 +3,7 @@ package com.bugsby.datalayer.controllers;
 import com.bugsby.datalayer.controllers.security.SecurityConstants;
 import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.service.exceptions.EmailTakenException;
+import com.bugsby.datalayer.service.exceptions.GitHubProjectDetailsException;
 import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
 import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
 import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
@@ -14,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.client.RestClientException;
 
 import java.net.ConnectException;
 
@@ -67,6 +67,11 @@ public class ExceptionHandlerController {
 
     @ExceptionHandler(value = IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+        return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = GitHubProjectDetailsException.class)
+    public ResponseEntity<ErrorResponse> handleGitHubProjectDetailsException(GitHubProjectDetailsException e) {
         return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }

@@ -277,7 +277,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectResponse'
-
+        400:
+          description: 'Failed to update project'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: 'Project not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /projects/{id}/involvements:
     get:

@@ -94,9 +94,9 @@ public class WorkflowRunJob {
 
     private boolean projectWithGitHubActionsEnabled(Project project) {
         return Optional.ofNullable(project.getGitHubProjectDetails())
-                .filter(gitHubProjectDetails -> gitHubProjectDetails.getToken() != null)
-                .filter(gitHubProjectDetails -> gitHubProjectDetails.getRepositoryName() != null)
-                .filter(gitHubProjectDetails -> gitHubProjectDetails.getRepositoryOwner() != null)
+                .filter(g -> (g.getToken() != null && !g.getToken().equals("")) ||
+                        (g.getRepositoryOwner() != null && !g.getRepositoryOwner().equals("")) ||
+                        (g.getRepositoryName() != null && !g.getRepositoryName().equals("")))
                 .isPresent();
     }
 
