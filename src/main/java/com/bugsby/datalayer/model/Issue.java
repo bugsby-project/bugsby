@@ -67,30 +67,6 @@ public class Issue {
         this.reporter = reporter;
     }
 
-    public Issue(String title, String description, String expectedBehaviour, String actualBehaviour, String stackTrace, Severity severity, Status status, IssueType type, Project project, User reporter) {
-        this.title = title;
-        this.description = description;
-        this.expectedBehaviour = expectedBehaviour;
-        this.actualBehaviour = actualBehaviour;
-        this.stackTrace = stackTrace;
-        this.severity = severity;
-        this.status = status;
-        this.type = type;
-        this.project = project;
-        this.reporter = reporter;
-    }
-
-    public Issue(String title, String description, Severity severity, Status status, IssueType type, Project project, User reporter, User assignee) {
-        this.title = title;
-        this.description = description;
-        this.severity = severity;
-        this.status = status;
-        this.type = type;
-        this.project = project;
-        this.reporter = reporter;
-        this.assignee = assignee;
-    }
-
     public Long getId() {
         return id;
     }
