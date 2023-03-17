@@ -20,6 +20,7 @@ import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
 import com.bugsby.datalayer.service.exceptions.UserNotInProjectException;
 import com.bugsby.datalayer.service.exceptions.UsernameTakenException;
 import com.bugsby.datalayer.service.utils.Constants;
+import com.bugsby.datalayer.service.validators.GitHubProjectDetailsValidator;
 import com.bugsby.datalayer.swagger.ai.api.DefaultApi;
 import com.bugsby.datalayer.swagger.ai.model.DuplicateIssuesRequest;
 import com.bugsby.datalayer.swagger.ai.model.IssueTypeEnum;
@@ -43,6 +44,7 @@ public class MasterService implements Service {
     private final IssueRepository issueRepository;
     private final com.bugsby.datalayer.swagger.ai.api.DefaultApi aiClient;
     private final BiFunction<List<Issue>, Issue, DuplicateIssuesRequest> duplicateIssueRequestMapper;
+    private final GitHubProjectDetailsValidator gitHubProjectDetailsValidator;
 
     private static final float PROBABILITY_OFFENSIVE_THRESHOLD = 0.8f;
 
@@ -52,13 +54,15 @@ public class MasterService implements Service {
                          InvolvementRepository involvementRepository,
                          IssueRepository issueRepository,
                          DefaultApi aiClient,
-                         BiFunction<List<Issue>, Issue, DuplicateIssuesRequest> duplicateIssueRequestMapper) {
+                         BiFunction<List<Issue>, Issue, DuplicateIssuesRequest> duplicateIssueRequestMapper,
+                         GitHubProjectDetailsValidator gitHubProjectDetailsValidator) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.involvementRepository = involvementRepository;
         this.issueRepository = issueRepository;
         this.aiClient = aiClient;
         this.duplicateIssueRequestMapper = duplicateIssueRequestMapper;
+        this.gitHubProjectDetailsValidator = gitHubProjectDetailsValidator;
     }
 
     @Override
@@ -93,6 +97,7 @@ public class MasterService implements Service {
     @Override
     @Transactional
     public Project createProject(Project project) {
+        gitHubProjectDetailsValidator.validate(project.getGitHubProjectDetails());
         project.setCreatedAt(LocalDateTime.now());
         project.getInvolvements()
                 .forEach(involvement -> involvement.setProject(project));
@@ -112,6 +117,8 @@ public class MasterService implements Service {
                     gitHubProjectDetails.setRepositoryName(updateProjectRequest.getRepositoryName());
                     gitHubProjectDetails.setToken(updateProjectRequest.getToken());
                     project.setGitHubProjectDetails(gitHubProjectDetails);
+
+                    gitHubProjectDetailsValidator.validate(gitHubProjectDetails);
 
                     return project;
                 })
