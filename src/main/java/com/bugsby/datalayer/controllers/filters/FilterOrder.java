@@ -1,5 +1,10 @@
 package com.bugsby.datalayer.controllers.filters;
 
-public interface FilterOrder {
-    int LOGGING_FILTER_ORDER = 1;
+public final class FilterOrder {
+
+    private FilterOrder() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    public static final int LOGGING_FILTER_ORDER = 1;
 }

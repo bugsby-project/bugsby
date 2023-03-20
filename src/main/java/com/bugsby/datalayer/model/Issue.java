@@ -20,7 +20,7 @@ import java.util.Objects;
 )
 @javax.persistence.Entity
 @Table(name = "issues")
-public class Issue implements Entity<Long>, Cloneable {
+public class Issue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -67,36 +67,10 @@ public class Issue implements Entity<Long>, Cloneable {
         this.reporter = reporter;
     }
 
-    public Issue(String title, String description, String expectedBehaviour, String actualBehaviour, String stackTrace, Severity severity, Status status, IssueType type, Project project, User reporter) {
-        this.title = title;
-        this.description = description;
-        this.expectedBehaviour = expectedBehaviour;
-        this.actualBehaviour = actualBehaviour;
-        this.stackTrace = stackTrace;
-        this.severity = severity;
-        this.status = status;
-        this.type = type;
-        this.project = project;
-        this.reporter = reporter;
-    }
-
-    public Issue(String title, String description, Severity severity, Status status, IssueType type, Project project, User reporter, User assignee) {
-        this.title = title;
-        this.description = description;
-        this.severity = severity;
-        this.status = status;
-        this.type = type;
-        this.project = project;
-        this.reporter = reporter;
-        this.assignee = assignee;
-    }
-
-    @Override
     public Long getId() {
         return id;
     }
 
-    @Override
     public void setId(Long aLong) {
         this.id = aLong;
     }
@@ -212,14 +186,5 @@ public class Issue implements Entity<Long>, Cloneable {
     @Override
     public int hashCode() {
         return Objects.hash(id);
-    }
-
-    @Override
-    public Issue clone() {
-        try {
-            return (Issue) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
     }
 }

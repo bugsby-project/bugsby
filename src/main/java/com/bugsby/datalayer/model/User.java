@@ -21,7 +21,7 @@ import java.util.Set;
 )
 @javax.persistence.Entity
 @Table(name = "users")
-public class User implements Entity<Long>, Cloneable {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -69,12 +69,10 @@ public class User implements Entity<Long>, Cloneable {
         this.username = username;
     }
 
-    @Override
     public Long getId() {
         return id;
     }
 
-    @Override
     public void setId(Long id) {
         this.id = id;
     }
@@ -150,15 +148,6 @@ public class User implements Entity<Long>, Cloneable {
     @Override
     public int hashCode() {
         return Objects.hash(id, username, password, firstName, lastName, email);
-    }
-
-    @Override
-    public User clone() {
-        try {
-            return (User) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
     }
 
     public Set<Issue> getAssignedIssues() {

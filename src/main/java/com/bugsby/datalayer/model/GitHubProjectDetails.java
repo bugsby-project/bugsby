@@ -9,7 +9,7 @@ import javax.persistence.OneToOne;
 import java.util.Objects;
 
 @javax.persistence.Entity
-public class GitHubProjectDetails implements Entity<Long> {
+public class GitHubProjectDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -35,12 +35,10 @@ public class GitHubProjectDetails implements Entity<Long> {
         this.project = project;
     }
 
-    @Override
     public Long getId() {
         return id;
     }
 
-    @Override
     public void setId(Long aLong) {
         this.id = aLong;
     }

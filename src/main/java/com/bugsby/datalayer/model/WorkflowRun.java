@@ -7,7 +7,7 @@ import javax.persistence.ManyToOne;
 import java.util.Objects;
 
 @javax.persistence.Entity
-public class WorkflowRun implements Entity<Long> {
+public class WorkflowRun {
     @Id
     @Column(name = "id")
     private Long id;
@@ -32,12 +32,10 @@ public class WorkflowRun implements Entity<Long> {
         this.project = project;
     }
 
-    @Override
     public Long getId() {
         return this.id;
     }
 
-    @Override
     public void setId(Long aLong) {
         this.id = aLong;
     }
