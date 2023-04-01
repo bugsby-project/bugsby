@@ -4,7 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import java.util.Objects;
 
@@ -20,8 +19,7 @@ public class GitHubProjectDetails {
     private String repositoryOwner;
     @Column(name = "token")
     private String token;
-    @OneToOne
-    @JoinColumn(name = "project_id")
+    @OneToOne(mappedBy = "gitHubProjectDetails")
     private Project project;
 
     public GitHubProjectDetails() {

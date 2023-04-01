@@ -106,8 +106,9 @@ public class WorkflowRunJob {
     }
 
     private WorkflowRun workflowRunMapper(Project project, com.bugsby.datalayer.swagger.github.model.WorkflowRun workflowRun) {
+        // todo add prefilled issue
         return new WorkflowRun(
-                workflowRun.getId(), workflowRun.getName(), workflowRun.getHtmlUrl(), workflowRun.getConclusion(), project
+                workflowRun.getId(), workflowRun.getName(), workflowRun.getHtmlUrl(), workflowRun.getConclusion(), project, null
         );
     }
 
