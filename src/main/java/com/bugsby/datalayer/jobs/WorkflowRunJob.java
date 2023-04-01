@@ -1,7 +1,11 @@
 package com.bugsby.datalayer.jobs;
 
+import com.bugsby.datalayer.model.IssueType;
+import com.bugsby.datalayer.model.PrefilledIssue;
 import com.bugsby.datalayer.model.Project;
+import com.bugsby.datalayer.model.Severity;
 import com.bugsby.datalayer.model.WorkflowRun;
+import com.bugsby.datalayer.repository.PrefilledIssueRepository;
 import com.bugsby.datalayer.repository.ProjectRepository;
 import com.bugsby.datalayer.swagger.ai.api.DefaultApi;
 import com.bugsby.datalayer.swagger.github.api.ActionsApi;
@@ -32,6 +36,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.StreamSupport;
 
 @Configuration
@@ -41,12 +46,14 @@ public class WorkflowRunJob {
     private final ProjectRepository projectRepository;
     private final com.bugsby.datalayer.swagger.github.api.ActionsApi actionsApi;
     private final com.bugsby.datalayer.swagger.ai.api.DefaultApi bugsbyAiApi;
+    private final PrefilledIssueRepository prefilledIssueRepository;
 
     @Autowired
-    public WorkflowRunJob(ProjectRepository projectRepository, ActionsApi actionsApi, DefaultApi bugsbyAiApi) {
+    public WorkflowRunJob(ProjectRepository projectRepository, ActionsApi actionsApi, DefaultApi bugsbyAiApi, PrefilledIssueRepository prefilledIssueRepository) {
         this.projectRepository = projectRepository;
         this.actionsApi = actionsApi;
         this.bugsbyAiApi = bugsbyAiApi;
+        this.prefilledIssueRepository = prefilledIssueRepository;
     }
 
     @Scheduled(fixedDelay = 3, timeUnit = TimeUnit.MINUTES)
@@ -82,15 +89,18 @@ public class WorkflowRunJob {
                 })
                 .filter(pair -> !pair.getValue1().isEmpty())
                 .forEach(pair -> {
-                    pair.getValue1().stream()
+                    List<PrefilledIssue> prefilledIssues = pair.getValue1().stream()
                             .map(workflowRun -> this.analyseWorkflowLogs(pair.getValue0(), workflowRun))
                             .filter(Objects::nonNull)
-                            // todo email prefilled issue report
-                            .forEach(content -> LOGGER.info(content.toString()));
+                            .map(prefilledIssue -> this.prefilledIssueMapper(pair.getValue0(), prefilledIssue))
+                            .map(prefilledIssueRepository::save)
+                            .toList();
+                    // todo email prefilled issue report
 
                     // update workflow runs which have been verified
+                    AtomicInteger index = new AtomicInteger(0);
                     List<WorkflowRun> newWorkflowRuns = pair.getValue1().stream()
-                            .map(workflowRun -> this.workflowRunMapper(pair.getValue0(), workflowRun))
+                            .map(workflowRun -> this.workflowRunMapper(pair.getValue0(), workflowRun, prefilledIssues.get(index.getAndIncrement())))
                             .toList();
                     pair.getValue0().getWorkflowRuns().addAll(newWorkflowRuns);
                     projectRepository.save(pair.getValue0());
@@ -105,11 +115,38 @@ public class WorkflowRunJob {
                 .isPresent();
     }
 
-    private WorkflowRun workflowRunMapper(Project project, com.bugsby.datalayer.swagger.github.model.WorkflowRun workflowRun) {
-        // todo add prefilled issue
+    private WorkflowRun workflowRunMapper(Project project, com.bugsby.datalayer.swagger.github.model.WorkflowRun workflowRun, PrefilledIssue prefilledIssue) {
         return new WorkflowRun(
-                workflowRun.getId(), workflowRun.getName(), workflowRun.getHtmlUrl(), workflowRun.getConclusion(), project, null
+                workflowRun.getId(), workflowRun.getName(), workflowRun.getHtmlUrl(), workflowRun.getConclusion(), project, prefilledIssue
         );
+    }
+
+    private PrefilledIssue prefilledIssueMapper(Project project, com.bugsby.datalayer.swagger.ai.model.PrefilledIssue prefilledIssue) {
+        int maxLength = 2000;
+        return new PrefilledIssue.Builder()
+                .title(prefilledIssue.getTitle())
+                .description(prefilledIssue.getDescription())
+                .expectedBehaviour(prefilledIssue.getExpectedBehaviour())
+                .actualBehaviour(Optional.ofNullable(prefilledIssue.getActualBehaviour())
+                        .filter(string -> string.length() > maxLength)
+                        .map(string -> string.substring(0, maxLength))
+                        .orElse(null)
+                )
+                .stackTrace(Optional.ofNullable(prefilledIssue.getStackTrace())
+                        .filter(string -> string.length() > maxLength)
+                        .map(string -> string.substring(0, maxLength))
+                        .orElse(null)
+                )
+                .severity(Optional.ofNullable(prefilledIssue.getSeverity())
+                        .map(com.bugsby.datalayer.swagger.ai.model.SeverityEnum::getValue)
+                        .map(Severity::valueOf)
+                        .orElse(null))
+                .type(Optional.ofNullable(prefilledIssue.getType())
+                        .map(com.bugsby.datalayer.swagger.ai.model.IssueTypeEnum::getValue)
+                        .map(IssueType::valueOf)
+                        .orElse(null))
+                .project(project)
+                .build();
     }
 
     private com.bugsby.datalayer.swagger.ai.model.PrefilledIssue analyseWorkflowLogs(Project project, com.bugsby.datalayer.swagger.github.model.WorkflowRun workflowRun) {

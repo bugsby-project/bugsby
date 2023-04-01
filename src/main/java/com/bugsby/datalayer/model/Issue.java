@@ -31,9 +31,9 @@ public class Issue {
     private String description;
     @Column(name = "expected_behaviour")
     private String expectedBehaviour;
-    @Column(name = "actual_behaviour")
+    @Column(name = "actual_behaviour", length = 2000)
     private String actualBehaviour;
-    @Column(name = "stack_trace")
+    @Column(name = "stack_trace", length = 2000)
     private String stackTrace;
     @Enumerated(value = EnumType.STRING)
     @Column(name = "severity")
