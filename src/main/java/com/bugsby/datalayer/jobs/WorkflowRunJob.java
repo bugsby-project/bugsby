@@ -3,6 +3,7 @@ package com.bugsby.datalayer.jobs;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.WorkflowRun;
 import com.bugsby.datalayer.repository.ProjectRepository;
+import com.bugsby.datalayer.swagger.ai.api.DefaultApi;
 import com.bugsby.datalayer.swagger.github.api.ActionsApi;
 import net.lingala.zip4j.ZipFile;
 import org.javatuples.Pair;
@@ -26,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -38,11 +40,13 @@ public class WorkflowRunJob {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowRunJob.class);
     private final ProjectRepository projectRepository;
     private final com.bugsby.datalayer.swagger.github.api.ActionsApi actionsApi;
+    private final com.bugsby.datalayer.swagger.ai.api.DefaultApi bugsbyAiApi;
 
     @Autowired
-    public WorkflowRunJob(ProjectRepository projectRepository, ActionsApi actionsApi) {
+    public WorkflowRunJob(ProjectRepository projectRepository, ActionsApi actionsApi, DefaultApi bugsbyAiApi) {
         this.projectRepository = projectRepository;
         this.actionsApi = actionsApi;
+        this.bugsbyAiApi = bugsbyAiApi;
     }
 
     @Scheduled(fixedDelay = 3, timeUnit = TimeUnit.MINUTES)
@@ -79,8 +83,9 @@ public class WorkflowRunJob {
                 .filter(pair -> !pair.getValue1().isEmpty())
                 .forEach(pair -> {
                     pair.getValue1().stream()
-                            .map(workflowRun -> this.downloadWorkflowRunLogs(pair.getValue0(), workflowRun))
-                            // todo send log file for analysis
+                            .map(workflowRun -> this.analyseWorkflowLogs(pair.getValue0(), workflowRun))
+                            .filter(Objects::nonNull)
+                            // todo email prefilled issue report
                             .forEach(content -> LOGGER.info(content.toString()));
 
                     // update workflow runs which have been verified
@@ -106,7 +111,8 @@ public class WorkflowRunJob {
         );
     }
 
-    private List<String> downloadWorkflowRunLogs(Project project, com.bugsby.datalayer.swagger.github.model.WorkflowRun workflowRun) {
+    private com.bugsby.datalayer.swagger.ai.model.PrefilledIssue analyseWorkflowLogs(Project project, com.bugsby.datalayer.swagger.github.model.WorkflowRun workflowRun) {
+        // download workflow logs
         RestTemplate restTemplate = new RestTemplate();
         String url = UriComponentsBuilder.fromHttpUrl(actionsApi.getApiClient().getBasePath())
                 .path("/repos")
@@ -136,18 +142,19 @@ public class WorkflowRunJob {
 
                 File logFile = Arrays.stream(Objects.requireNonNull(pathDirectoryExtracted.toFile().listFiles()))
                         .filter(File::isFile)
-                        .min((f1, f2) -> Long.compare(f2.length(), f1.length()))
+                        .max(Comparator.comparingLong(File::length))
                         .orElseThrow(IOException::new);
 
-                List<String> content = Files.readAllLines(logFile.toPath());
+                // send log file to analysis
+                com.bugsby.datalayer.swagger.ai.model.PrefilledIssue prefilledIssue = bugsbyAiApi.analyseLogFile(workflowRun.getDisplayTitle(), logFile);
 
                 FileSystemUtils.deleteRecursively(pathDirectoryExtracted);
                 Files.delete(zipFile.toPath());
 
-                return content;
+                return prefilledIssue;
             }
         } catch (IOException e) {
-            return Collections.emptyList();
+            return null;
         }
     }
 }

@@ -65,6 +65,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/IssueObjectList'
 
+  /log-analysis:
+    post:
+      summary: Analyse log file and construct prefilled issue report
+      operationId: analyseLogFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                logFile:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: 'Successfully constructed prefilled issue report'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrefilledIssue'
+
 components:
   schemas:
     DuplicateIssuesRequest:
@@ -94,6 +117,30 @@ components:
           $ref: '#/components/schemas/StatusEnum'
         type:
           $ref: '#/components/schemas/IssueTypeEnum'
+
+    PrefilledIssue:
+      type: object
+      properties:
+        title:
+          type: string
+          description: 'Title of the issue'
+        description:
+          type: string
+          description: 'Description of the issue'
+        expectedBehaviour:
+          type: string
+          description: 'Expected behaviour of the issue'
+        actualBehaviour:
+          type: string
+          description: 'Actual behaviour of the issue'
+        stackTrace:
+          type: string
+          description: 'Stack trace of the issue'
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        type:
+          $ref: '#/components/schemas/IssueTypeEnum'
+
 
     SeverityLevelObject:
       type: object
