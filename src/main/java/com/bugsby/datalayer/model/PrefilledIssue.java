@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "prefilled_issue")
@@ -67,6 +68,28 @@ public class PrefilledIssue {
 
     public void setCreationDate(LocalDate creationDate) {
         this.creationDate = creationDate;
+    }
+
+    @Override
+    public String toString() {
+        return "PrefilledIssue{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PrefilledIssue that = (PrefilledIssue) o;
+        return Objects.equals(id, that.id) && Objects.equals(title, that.title) && Objects.equals(description, that.description) && Objects.equals(expectedBehaviour, that.expectedBehaviour) && Objects.equals(actualBehaviour, that.actualBehaviour) && Objects.equals(stackTrace, that.stackTrace) && severity == that.severity && type == that.type && Objects.equals(creationDate, that.creationDate) && Objects.equals(project, that.project) && Objects.equals(workflowRun, that.workflowRun);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, description, expectedBehaviour, actualBehaviour, stackTrace, severity, type, creationDate, project, workflowRun);
     }
 
     public static class Builder {
