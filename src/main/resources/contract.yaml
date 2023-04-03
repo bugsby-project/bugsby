@@ -440,6 +440,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /prefilled-issues/{id}:
+    get:
+      summary: Retrieve prefilled issue by unique identifier
+      operationId: getPrefilledIssueById
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/prefilledIssueId'
+      responses:
+        200:
+          description: 'Successfully retrieved prefilled issue'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrefilledIssueResponse'
+        404:
+          description: 'Prefilled issue not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        400:
+          description: 'Unable to retrieve prefilled issue'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     AuthenticationRequest:
@@ -671,6 +698,36 @@ components:
           type: integer
           format: int64
           description: 'Unique identifier of the issue assignee'
+    PrefilledIssueResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 'Unique identifier of the prefilled issue'
+        title:
+          type: string
+          description: 'Title of the prefilled issue'
+        description:
+          type: string
+          description: 'Description of the prefilled issue'
+        expectedBehaviour:
+          type: string
+          description: 'Expected behaviour of the prefilled issue'
+        actualBehaviour:
+          type: string
+          description: 'Actual behaviour of the prefilled issue'
+        stackTrace:
+          type: string
+          description: 'Stack trace of the prefilled issue'
+        severity:
+          $ref: '#/components/schemas/Severity'
+        type:
+          $ref: '#/components/schemas/IssueType'
+        projectId:
+          type: integer
+          format: int64
+          description: 'Unique identifier of the corresponding project of the prefilled issue'
     IssueTypeResponse:
       type: object
       properties:
@@ -784,6 +841,14 @@ components:
       name: id
       required: true
       description: 'Issue unique identifier'
+      schema:
+        type: integer
+        format: int64
+    prefilledIssueId:
+      in: path
+      name: id
+      required: true
+      description: 'Prefilled issue unique identifier'
       schema:
         type: integer
         format: int64
