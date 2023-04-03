@@ -7,6 +7,8 @@ import com.bugsby.datalayer.model.Severity;
 import com.bugsby.datalayer.model.WorkflowRun;
 import com.bugsby.datalayer.repository.PrefilledIssueRepository;
 import com.bugsby.datalayer.repository.ProjectRepository;
+import com.bugsby.datalayer.service.email.EmailService;
+import com.bugsby.datalayer.service.exceptions.EmailException;
 import com.bugsby.datalayer.swagger.ai.api.DefaultApi;
 import com.bugsby.datalayer.swagger.github.api.ActionsApi;
 import net.lingala.zip4j.ZipFile;
@@ -47,13 +49,15 @@ public class WorkflowRunJob {
     private final com.bugsby.datalayer.swagger.github.api.ActionsApi actionsApi;
     private final com.bugsby.datalayer.swagger.ai.api.DefaultApi bugsbyAiApi;
     private final PrefilledIssueRepository prefilledIssueRepository;
+    private final EmailService emailService;
 
     @Autowired
-    public WorkflowRunJob(ProjectRepository projectRepository, ActionsApi actionsApi, DefaultApi bugsbyAiApi, PrefilledIssueRepository prefilledIssueRepository) {
+    public WorkflowRunJob(ProjectRepository projectRepository, ActionsApi actionsApi, DefaultApi bugsbyAiApi, PrefilledIssueRepository prefilledIssueRepository, EmailService emailService) {
         this.projectRepository = projectRepository;
         this.actionsApi = actionsApi;
         this.bugsbyAiApi = bugsbyAiApi;
         this.prefilledIssueRepository = prefilledIssueRepository;
+        this.emailService = emailService;
     }
 
     @Scheduled(fixedDelay = 3, timeUnit = TimeUnit.MINUTES)
@@ -95,15 +99,29 @@ public class WorkflowRunJob {
                             .map(prefilledIssue -> this.prefilledIssueMapper(pair.getValue0(), prefilledIssue))
                             .map(prefilledIssueRepository::save)
                             .toList();
-                    // todo email prefilled issue report
 
                     // update workflow runs which have been verified
                     AtomicInteger index = new AtomicInteger(0);
                     List<WorkflowRun> newWorkflowRuns = pair.getValue1().stream()
-                            .map(workflowRun -> this.workflowRunMapper(pair.getValue0(), workflowRun, prefilledIssues.get(index.getAndIncrement())))
+                            .map(workflowRun -> {
+                                WorkflowRun workflowRun1 = this.workflowRunMapper(pair.getValue0(), workflowRun, prefilledIssues.get(index.get()));
+                                prefilledIssues.get(index.getAndIncrement()).setWorkflowRun(workflowRun1);
+                                return workflowRun1;
+                            })
                             .toList();
                     pair.getValue0().getWorkflowRuns().addAll(newWorkflowRuns);
                     projectRepository.save(pair.getValue0());
+
+                    // send emails with the prefilled issues
+                    newWorkflowRuns.stream()
+                            .map(WorkflowRun::getPrefilledIssue)
+                            .forEach(prefilledIssue -> {
+                                try {
+                                    emailService.sendBuildFailureEmail(prefilledIssue);
+                                } catch (EmailException messagingException) {
+                                    LOGGER.error("Failed to mail prefilled issue {}", prefilledIssue);
+                                }
+                            });
                 });
     }
 

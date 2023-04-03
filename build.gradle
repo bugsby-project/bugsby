@@ -75,6 +75,8 @@ dependencies {
     implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '2.11.4'
     // https://mvnrepository.com/artifact/org.javatuples/javatuples
     implementation group: 'org.javatuples', name: 'javatuples', version: '1.2'
+    // https://mvnrepository.com/artifact/jakarta.mail/jakarta.mail-api
+    implementation group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2'
 }
 
 task buildBugsbyServer(type: GenerateTask) {
