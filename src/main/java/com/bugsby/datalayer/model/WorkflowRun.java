@@ -1,12 +1,16 @@
 package com.bugsby.datalayer.model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.util.Objects;
 
 @javax.persistence.Entity
+@Table(name = "workflow_run")
 public class WorkflowRun {
     @Id
     @Column(name = "id")
@@ -20,16 +24,20 @@ public class WorkflowRun {
     @ManyToOne
     @JoinColumn(name = "project_id")
     private Project project;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "prefilled_issue_id", referencedColumnName = "id")
+    private PrefilledIssue prefilledIssue;
 
     public WorkflowRun() {
     }
 
-    public WorkflowRun(Long id, String name, String htmlUrl, String conclusion, Project project) {
+    public WorkflowRun(Long id, String name, String htmlUrl, String conclusion, Project project, PrefilledIssue prefilledIssue) {
         this.id = id;
         this.name = name;
         this.htmlUrl = htmlUrl;
         this.conclusion = conclusion;
         this.project = project;
+        this.prefilledIssue = prefilledIssue;
     }
 
     public Long getId() {
@@ -86,5 +94,21 @@ public class WorkflowRun {
                 ", conclusion='" + conclusion + '\'' +
                 ", project=" + project +
                 '}';
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    public PrefilledIssue getPrefilledIssue() {
+        return prefilledIssue;
+    }
+
+    public void setPrefilledIssue(PrefilledIssue prefilledIssue) {
+        this.prefilledIssue = prefilledIssue;
     }
 }

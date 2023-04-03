@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
+      xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:AllowPNG/>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--[if !mso]><!-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--<![endif]-->
+    <title></title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+<div class="card align-items-center justify-content-center .d-flex" style="width: 30rem; margin: auto; text-align: center;">
+    <div class="card-img-top">
+        <img
+                class="card-img-top"
+                src="https://i.ibb.co/w650hFW/bugsby-Logo.png" alt="bugsby-Logo"
+                border="0"
+                style="width: 50%;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" style="margin-left: 10px"
+             class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+        </svg>
+        <img src="https://github.githubassets.com/images/email/icons/actions.png" alt="GitHub Actions Logo"/>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">{{title}}</h5>
+        <p class="card-text">We have filled an issue with details which might help in identifying the failure reason</p>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <a href="{{prefilledIssueLink}}" class="btn btn-primary">View prefilled issue</a>
+            </li>
+            <li class="list-group-item">
+                <a href="{{workflowRunLink}}" class="btn btn-primary">View workflow run</a>
+            </li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>

@@ -40,7 +40,7 @@ public class Project {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "project")
     private Set<Issue> issues = new HashSet<>();
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "github_project_details_id")
+    @JoinColumn(name = "github_project_details_id", referencedColumnName = "id")
     private GitHubProjectDetails gitHubProjectDetails;
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "project")
     private Set<WorkflowRun> workflowRuns;
