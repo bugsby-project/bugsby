@@ -51,7 +51,7 @@ public class BuildFailureEmailBodyBuilder {
         return UriComponentsBuilder.fromHttpUrl(webUrl)
                 .pathSegment("projects",
                         String.valueOf(prefilledIssue.getProject().getId()),
-                        "prefilled-issue",
+                        "prefilled-issues",
                         String.valueOf(prefilledIssue.getId()))
                 .toUriString();
     }

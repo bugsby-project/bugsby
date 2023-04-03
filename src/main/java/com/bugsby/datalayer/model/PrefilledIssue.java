@@ -11,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "prefilled_issue")
@@ -35,6 +37,8 @@ public class PrefilledIssue {
     @Enumerated(value = EnumType.STRING)
     @Column(name = "type")
     private IssueType type;
+    @Column(name = "creation_date")
+    private LocalDate creationDate;
     @ManyToOne
     @JoinColumn(name = "project_id")
     private Project project;
@@ -44,7 +48,7 @@ public class PrefilledIssue {
     public PrefilledIssue() {
     }
 
-    public PrefilledIssue(Long id, String title, String description, String expectedBehaviour, String actualBehaviour, String stackTrace, Severity severity, IssueType type, Project project, WorkflowRun workflowRun) {
+    public PrefilledIssue(Long id, String title, String description, String expectedBehaviour, String actualBehaviour, String stackTrace, Severity severity, IssueType type, Project project, WorkflowRun workflowRun, LocalDate creationDate) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -55,6 +59,37 @@ public class PrefilledIssue {
         this.type = type;
         this.project = project;
         this.workflowRun = workflowRun;
+        this.creationDate = creationDate;
+    }
+
+    public LocalDate getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(LocalDate creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    @Override
+    public String toString() {
+        return "PrefilledIssue{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PrefilledIssue that = (PrefilledIssue) o;
+        return Objects.equals(id, that.id) && Objects.equals(title, that.title) && Objects.equals(description, that.description) && Objects.equals(expectedBehaviour, that.expectedBehaviour) && Objects.equals(actualBehaviour, that.actualBehaviour) && Objects.equals(stackTrace, that.stackTrace) && severity == that.severity && type == that.type && Objects.equals(creationDate, that.creationDate) && Objects.equals(project, that.project) && Objects.equals(workflowRun, that.workflowRun);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, description, expectedBehaviour, actualBehaviour, stackTrace, severity, type, creationDate, project, workflowRun);
     }
 
     public static class Builder {
@@ -63,6 +98,7 @@ public class PrefilledIssue {
         private String description;
         private String expectedBehaviour;
         private String actualBehaviour;
+        private LocalDate creationDate;
         private String stackTrace;
         private Severity severity;
         private IssueType type;
@@ -94,6 +130,11 @@ public class PrefilledIssue {
             return this;
         }
 
+        public Builder creationDate(LocalDate creationDate) {
+            this.creationDate = creationDate;
+            return this;
+        }
+
         public Builder stackTrace(String stackTrace) {
             this.stackTrace = stackTrace;
             return this;
@@ -120,7 +161,7 @@ public class PrefilledIssue {
         }
 
         public PrefilledIssue build() {
-            return new PrefilledIssue(id, title, description, expectedBehaviour, actualBehaviour, stackTrace, severity, type, project, workflowRun);
+            return new PrefilledIssue(id, title, description, expectedBehaviour, actualBehaviour, stackTrace, severity, type, project, workflowRun, creationDate);
         }
     }
 

@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -164,6 +165,7 @@ public class WorkflowRunJob {
                         .map(IssueType::valueOf)
                         .orElse(null))
                 .project(project)
+                .creationDate(LocalDate.now())
                 .build();
     }
 
