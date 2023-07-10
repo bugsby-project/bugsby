@@ -1,6 +1,7 @@
 package com.bugsby.datalayer.repository;
 
 import com.bugsby.datalayer.model.PrefilledIssue;
+import com.bugsby.datalayer.model.PrefilledIssueTitleCount;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
@@ -11,4 +12,9 @@ import java.util.List;
 public interface PrefilledIssueRepository extends PagingAndSortingRepository<PrefilledIssue, Long> {
     @Query("select i from PrefilledIssue i where i.creationDate <= :creationDate")
     List<PrefilledIssue> findAllWithCreationDateBefore(@Param("creationDate") LocalDate creationDate);
+
+    @Query("select new com.bugsby.datalayer.model.PrefilledIssueTitleCount(p.expectedBehaviour, count(p)) " +
+            "from PrefilledIssue p " +
+            "group by p.expectedBehaviour")
+    List<PrefilledIssueTitleCount> getCountByExpectedBehaviour();
 }
