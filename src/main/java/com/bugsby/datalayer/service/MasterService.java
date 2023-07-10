@@ -4,11 +4,13 @@ import com.bugsby.datalayer.model.GitHubProjectDetails;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
+import com.bugsby.datalayer.model.PrefilledIssue;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.SeverityLevel;
 import com.bugsby.datalayer.model.User;
 import com.bugsby.datalayer.repository.InvolvementRepository;
 import com.bugsby.datalayer.repository.IssueRepository;
+import com.bugsby.datalayer.repository.PrefilledIssueRepository;
 import com.bugsby.datalayer.repository.ProjectRepository;
 import com.bugsby.datalayer.repository.UserRepository;
 import com.bugsby.datalayer.service.exceptions.AiServiceException;
@@ -42,6 +44,7 @@ public class MasterService implements Service {
     private final ProjectRepository projectRepository;
     private final InvolvementRepository involvementRepository;
     private final IssueRepository issueRepository;
+    private final PrefilledIssueRepository prefilledIssueRepository;
     private final com.bugsby.datalayer.swagger.ai.api.DefaultApi aiClient;
     private final BiFunction<List<Issue>, Issue, DuplicateIssuesRequest> duplicateIssueRequestMapper;
     private final GitHubProjectDetailsValidator gitHubProjectDetailsValidator;
@@ -53,13 +56,14 @@ public class MasterService implements Service {
                          ProjectRepository projectRepository,
                          InvolvementRepository involvementRepository,
                          IssueRepository issueRepository,
-                         DefaultApi aiClient,
+                         PrefilledIssueRepository prefilledIssueRepository, DefaultApi aiClient,
                          BiFunction<List<Issue>, Issue, DuplicateIssuesRequest> duplicateIssueRequestMapper,
                          GitHubProjectDetailsValidator gitHubProjectDetailsValidator) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.involvementRepository = involvementRepository;
         this.issueRepository = issueRepository;
+        this.prefilledIssueRepository = prefilledIssueRepository;
         this.aiClient = aiClient;
         this.duplicateIssueRequestMapper = duplicateIssueRequestMapper;
         this.gitHubProjectDetailsValidator = gitHubProjectDetailsValidator;
@@ -297,6 +301,11 @@ public class MasterService implements Service {
                                 .orElseThrow(() -> new IssueNotFoundException("Issue with id " + id + " not found")))
                         .toList())
                 .orElse(Collections.emptyList());
+    }
+
+    @Override
+    public PrefilledIssue getPrefilledIssueById(long id) {
+        return prefilledIssueRepository.findById(id).orElse(null);
     }
 
     private boolean isParticipantInProject(Issue issue, String username) {
