@@ -3,6 +3,9 @@ package com.bugsby.datalayer.controllers;
 import com.bugsby.datalayer.model.PrefilledIssue;
 import com.bugsby.datalayer.service.Service;
 import com.bugsby.datalayer.service.exceptions.PrefilledIssueNotFoundException;
+import com.bugsby.datalayer.swagger.api.PrefilledIssuesApi;
+import com.bugsby.datalayer.swagger.model.PrefilledIssueExpectedBehaviourCount;
+import com.bugsby.datalayer.swagger.model.PrefilledIssueExpectedBehaviourCountResponse;
 import com.bugsby.datalayer.swagger.model.PrefilledIssueResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -30,5 +33,17 @@ public class PrefilledIssueController implements com.bugsby.datalayer.swagger.ap
                 .map(prefilledIssueMapper)
                 .orElseThrow(() -> new PrefilledIssueNotFoundException("No prefilled issue with ID " + id));
         return ResponseEntity.ok(prefilledIssueResponse);
+    }
+
+    @Override
+    public ResponseEntity<PrefilledIssueExpectedBehaviourCountResponse> getPrefilledIssuesCountByExpectedBehaviourWithProject(String authorization, Long id) {
+        com.bugsby.datalayer.swagger.model.PrefilledIssueExpectedBehaviourCountResponse response = new com.bugsby.datalayer.swagger.model.PrefilledIssueExpectedBehaviourCountResponse()
+                .data(service.getPrefilledIssuesCountByExpectedBehaviourWithProject(id)
+                        .stream()
+                        .map(c -> new PrefilledIssueExpectedBehaviourCount()
+                                .expectedBehaviour(c.expectedBehaviour())
+                                .count(c.count()))
+                        .toList());
+        return ResponseEntity.ok(response);
     }
 }

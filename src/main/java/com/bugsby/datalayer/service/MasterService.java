@@ -5,6 +5,7 @@ import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
 import com.bugsby.datalayer.model.PrefilledIssue;
+import com.bugsby.datalayer.model.PrefilledIssueExpectedBehaviourCount;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.SeverityLevel;
 import com.bugsby.datalayer.model.User;
@@ -50,6 +51,7 @@ public class MasterService implements Service {
     private final GitHubProjectDetailsValidator gitHubProjectDetailsValidator;
 
     private static final float PROBABILITY_OFFENSIVE_THRESHOLD = 0.8f;
+    private static final String PREFILLED_ISSUE_EXPECTED_BEHAVIOUR_EXPLANATION = " should have been SUCCESSFUL";
 
     @Autowired
     public MasterService(UserRepository userRepository,
@@ -306,6 +308,19 @@ public class MasterService implements Service {
     @Override
     public PrefilledIssue getPrefilledIssueById(long id) {
         return prefilledIssueRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public List<PrefilledIssueExpectedBehaviourCount> getPrefilledIssuesCountByExpectedBehaviourWithProject(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException("Project with id " + projectId + " not found"));
+        return prefilledIssueRepository.getCountByExpectedBehaviourWithProject(project)
+                .stream()
+                .map(count -> new PrefilledIssueExpectedBehaviourCount(
+                        count.expectedBehaviour().replace(PREFILLED_ISSUE_EXPECTED_BEHAVIOUR_EXPLANATION, "").trim(),
+                        count.count()
+                ))
+                .toList();
     }
 
     private boolean isParticipantInProject(Issue issue, String username) {

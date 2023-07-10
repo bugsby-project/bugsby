@@ -4,6 +4,7 @@ import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
 import com.bugsby.datalayer.model.PrefilledIssue;
+import com.bugsby.datalayer.model.PrefilledIssueExpectedBehaviourCount;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.SeverityLevel;
 import com.bugsby.datalayer.model.User;
@@ -192,4 +193,11 @@ public interface Service {
      * - null, otherwise
      */
     PrefilledIssue getPrefilledIssueById(long id);
+
+    /**
+     * Method for retrieving the number of prefilled issues, grouped by their expected behaviour for a particular project
+     * @param projectId, the ID of the project to retrieve the statistics
+     * @return the number of prefilled issues, grouped by their expected behaviour
+     */
+    List<PrefilledIssueExpectedBehaviourCount> getPrefilledIssuesCountByExpectedBehaviourWithProject(Long projectId);
 }
