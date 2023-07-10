@@ -5,6 +5,7 @@ import com.bugsby.datalayer.service.exceptions.AiServiceException;
 import com.bugsby.datalayer.service.exceptions.EmailTakenException;
 import com.bugsby.datalayer.service.exceptions.GitHubProjectDetailsException;
 import com.bugsby.datalayer.service.exceptions.IssueNotFoundException;
+import com.bugsby.datalayer.service.exceptions.PrefilledIssueNotFoundException;
 import com.bugsby.datalayer.service.exceptions.ProjectNotFoundException;
 import com.bugsby.datalayer.service.exceptions.UserAlreadyInProjectException;
 import com.bugsby.datalayer.service.exceptions.UserNotFoundException;
@@ -73,5 +74,10 @@ public class ExceptionHandlerController {
     @ExceptionHandler(value = GitHubProjectDetailsException.class)
     public ResponseEntity<ErrorResponse> handleGitHubProjectDetailsException(GitHubProjectDetailsException e) {
         return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = PrefilledIssueNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePrefilledIssueNotFoundException(PrefilledIssueNotFoundException e) {
+        return new ResponseEntity<>(new ErrorResponse().message(e.getMessage()), HttpStatus.NOT_FOUND);
     }
 }

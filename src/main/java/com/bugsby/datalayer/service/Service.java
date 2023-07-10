@@ -3,6 +3,7 @@ package com.bugsby.datalayer.service;
 import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
+import com.bugsby.datalayer.model.PrefilledIssue;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.SeverityLevel;
 import com.bugsby.datalayer.model.User;
@@ -182,4 +183,13 @@ public interface Service {
      * @throws ProjectNotFoundException if the {@code issue}'s project id does not match a real project
      */
     List<Issue> retrieveDuplicateIssues(Issue issue) throws ProjectNotFoundException;
+
+    /**
+     * Method for retrieving the information of a prefilled issue, identified by its ID
+     *
+     * @param id, the identifier of the desired prefilled issue
+     * @return - the prefilled issue, if a prefilled issue with the ID {@param id} exists
+     * - null, otherwise
+     */
+    PrefilledIssue getPrefilledIssueById(long id);
 }

@@ -2,6 +2,7 @@ package com.bugsby.datalayer.repository;
 
 import com.bugsby.datalayer.model.PrefilledIssue;
 import com.bugsby.datalayer.model.PrefilledIssueTitleCount;
+import com.bugsby.datalayer.model.Project;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +16,7 @@ public interface PrefilledIssueRepository extends PagingAndSortingRepository<Pre
 
     @Query("select new com.bugsby.datalayer.model.PrefilledIssueTitleCount(p.expectedBehaviour, count(p)) " +
             "from PrefilledIssue p " +
+            "where p.project = :project " +
             "group by p.expectedBehaviour")
-    List<PrefilledIssueTitleCount> getCountByExpectedBehaviour();
+    List<PrefilledIssueTitleCount> getCountByExpectedBehaviourWithProject(Project project);
 }
