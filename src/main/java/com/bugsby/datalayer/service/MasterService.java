@@ -51,7 +51,6 @@ public class MasterService implements Service {
     private final GitHubProjectDetailsValidator gitHubProjectDetailsValidator;
 
     private static final float PROBABILITY_OFFENSIVE_THRESHOLD = 0.8f;
-    private static final String PREFILLED_ISSUE_EXPECTED_BEHAVIOUR_EXPLANATION = " should have been SUCCESSFUL";
 
     @Autowired
     public MasterService(UserRepository userRepository,
@@ -317,7 +316,7 @@ public class MasterService implements Service {
         return prefilledIssueRepository.getCountByExpectedBehaviourWithProject(project)
                 .stream()
                 .map(count -> new PrefilledIssueExpectedBehaviourCount(
-                        count.expectedBehaviour().replace(PREFILLED_ISSUE_EXPECTED_BEHAVIOUR_EXPLANATION, "").trim(),
+                        count.expectedBehaviour().trim(),
                         count.count()
                 ))
                 .toList();
