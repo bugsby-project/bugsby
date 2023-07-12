@@ -5,6 +5,7 @@ import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
 import com.bugsby.datalayer.model.PrefilledIssue;
+import com.bugsby.datalayer.model.PrefilledIssueCreationMonthCount;
 import com.bugsby.datalayer.model.PrefilledIssueExpectedBehaviourCount;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.SeverityLevel;
@@ -32,12 +33,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class MasterService implements Service {
@@ -319,6 +322,19 @@ public class MasterService implements Service {
                         count.expectedBehaviour().trim(),
                         count.count()
                 ))
+                .toList();
+    }
+
+    @Override
+    public List<PrefilledIssueCreationMonthCount> getPrefilledIssuesCountByMonthWithProject(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException("Project with id " + projectId + " not found"));
+        return prefilledIssueRepository.findAllByProject(project)
+                .stream()
+                .collect(Collectors.groupingBy(issue -> YearMonth.from(issue.getCreationDate()), Collectors.counting()))
+                .entrySet()
+                .stream()
+                .map(entry -> new PrefilledIssueCreationMonthCount(entry.getKey().atEndOfMonth(), entry.getValue()))
                 .toList();
     }
 

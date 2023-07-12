@@ -3,7 +3,8 @@ package com.bugsby.datalayer.controllers;
 import com.bugsby.datalayer.model.PrefilledIssue;
 import com.bugsby.datalayer.service.Service;
 import com.bugsby.datalayer.service.exceptions.PrefilledIssueNotFoundException;
-import com.bugsby.datalayer.swagger.api.PrefilledIssuesApi;
+import com.bugsby.datalayer.swagger.model.PrefilledIssueCreationMonthCount;
+import com.bugsby.datalayer.swagger.model.PrefilledIssueCreationMonthCountResponse;
 import com.bugsby.datalayer.swagger.model.PrefilledIssueExpectedBehaviourCount;
 import com.bugsby.datalayer.swagger.model.PrefilledIssueExpectedBehaviourCountResponse;
 import com.bugsby.datalayer.swagger.model.PrefilledIssueResponse;
@@ -43,6 +44,18 @@ public class PrefilledIssueController implements com.bugsby.datalayer.swagger.ap
                         .map(c -> new PrefilledIssueExpectedBehaviourCount()
                                 .expectedBehaviour(c.expectedBehaviour())
                                 .count(c.count()))
+                        .toList());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<PrefilledIssueCreationMonthCountResponse> getPrefilledIssuesCountByCreationMonthWithProject(String authorization, Long id) {
+        PrefilledIssueCreationMonthCountResponse response = new PrefilledIssueCreationMonthCountResponse()
+                .data(service.getPrefilledIssuesCountByMonthWithProject(id)
+                        .stream()
+                        .map(c -> new PrefilledIssueCreationMonthCount()
+                                .count(c.count())
+                                .creationMonth(c.month()))
                         .toList());
         return ResponseEntity.ok(response);
     }
