@@ -25,7 +25,7 @@ public class PrefilledIssueCleanUpJob {
         this.prefilledIssueRepository = prefilledIssueRepository;
     }
 
-    @Scheduled(fixedDelay = 7 * WEEKS_TO_DELETE, timeUnit = TimeUnit.DAYS)
+    @Scheduled(cron = Scheduled.CRON_DISABLED)
     @Transactional
     public void deletePrefilledIssues() {
         LOGGER.info("Deleting PrefilledIssues from {} weeks ago", WEEKS_TO_DELETE);
