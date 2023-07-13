@@ -19,4 +19,6 @@ public interface PrefilledIssueRepository extends PagingAndSortingRepository<Pre
             "where p.project = :project " +
             "group by p.expectedBehaviour")
     List<PrefilledIssueExpectedBehaviourCount> getCountByExpectedBehaviourWithProject(Project project);
+
+    List<PrefilledIssue> findAllByProject(Project project);
 }

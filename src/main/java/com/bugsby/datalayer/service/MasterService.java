@@ -5,6 +5,7 @@ import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
 import com.bugsby.datalayer.model.PrefilledIssue;
+import com.bugsby.datalayer.model.PrefilledIssueCreationMonthCount;
 import com.bugsby.datalayer.model.PrefilledIssueExpectedBehaviourCount;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.SeverityLevel;
@@ -32,12 +33,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.YearMonth;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @org.springframework.stereotype.Service
 public class MasterService implements Service {
@@ -319,6 +325,35 @@ public class MasterService implements Service {
                         count.expectedBehaviour().trim(),
                         count.count()
                 ))
+                .toList();
+    }
+
+    @Override
+    public List<PrefilledIssueCreationMonthCount> getPrefilledIssuesCountByMonthWithProject(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException("Project with id " + projectId + " not found"));
+        List<PrefilledIssueCreationMonthCount> initial = prefilledIssueRepository.findAllByProject(project)
+                .stream()
+                .collect(Collectors.groupingBy(issue -> YearMonth.from(issue.getCreationDate()), Collectors.counting()))
+                .entrySet()
+                .stream()
+                .map(entry -> new PrefilledIssueCreationMonthCount(entry.getKey().atEndOfMonth(), entry.getValue()))
+                .sorted(Comparator.comparing(PrefilledIssueCreationMonthCount::month))
+                .toList();
+
+        if (initial.isEmpty()) {
+            return initial;
+        }
+
+        Period period = Period.between(initial.get(0).month(), initial.get(initial.size() - 1).month());
+        List<PrefilledIssueCreationMonthCount> absentMonths = IntStream.range(0, period.getMonths())
+                .mapToObj(i -> initial.get(0).month().plusMonths(i))
+                .filter(date -> initial.stream()
+                        .noneMatch(issue -> issue.month().getMonth().equals(date.getMonth())))
+                .map(date -> new PrefilledIssueCreationMonthCount(date, 0))
+                .toList();
+        return Stream.concat(initial.stream(), absentMonths.stream())
+                .sorted(Comparator.comparing(PrefilledIssueCreationMonthCount::month))
                 .toList();
     }
 

@@ -4,6 +4,7 @@ import com.bugsby.datalayer.model.Involvement;
 import com.bugsby.datalayer.model.Issue;
 import com.bugsby.datalayer.model.IssueType;
 import com.bugsby.datalayer.model.PrefilledIssue;
+import com.bugsby.datalayer.model.PrefilledIssueCreationMonthCount;
 import com.bugsby.datalayer.model.PrefilledIssueExpectedBehaviourCount;
 import com.bugsby.datalayer.model.Project;
 import com.bugsby.datalayer.model.SeverityLevel;
@@ -200,4 +201,11 @@ public interface Service {
      * @return the number of prefilled issues, grouped by their expected behaviour
      */
     List<PrefilledIssueExpectedBehaviourCount> getPrefilledIssuesCountByExpectedBehaviourWithProject(Long projectId);
+
+    /**
+     * Method for retrieving the number of prefilled issues, grouped by their month of creation
+     * @param projectId, the ID of the project to retrieve the statistics
+     * @return the number of prefilled issues, grouped by their creation month
+     */
+    List<PrefilledIssueCreationMonthCount> getPrefilledIssuesCountByMonthWithProject(Long projectId);
 }

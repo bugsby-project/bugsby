@@ -488,6 +488,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /prefilled-issues/project/{id}/creation-date/count:
+    get:
+      summary: Retrieve the number of prefilled issues, grouped by their month
+      operationId: getPrefilledIssuesCountByCreationMonthWithProject
+      parameters:
+        - $ref: '#/components/parameters/jwt'
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        200:
+          description: 'Successfully retrieved number of prefilled issues grouped by their month'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrefilledIssueCreationMonthCountResponse'
+        404:
+          description: 'Project not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     AuthenticationRequest:
@@ -776,6 +797,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PrefilledIssueExpectedBehaviourCount'
+
+    PrefilledIssueCreationMonthCount:
+      type: object
+      properties:
+        creationMonth:
+          type: string
+          format: date
+        count:
+          type: integer
+          format: int64
+
+    PrefilledIssueCreationMonthCountResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrefilledIssueCreationMonthCount'
 
 
     ErrorResponse:
