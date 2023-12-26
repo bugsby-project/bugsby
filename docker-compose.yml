@@ -1,0 +1,56 @@
+version: '3'
+services:
+  bugsby:
+    build:
+      context: '.'
+    image: bugsby
+    container_name: bugsby
+    ports:
+      - "8080:8080"
+    depends_on:
+      - 'db'
+    networks:
+      - bugsby_network
+
+  db:
+    container_name: db
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=issue_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - bugsby_network
+
+  bugsbyAi:
+    container_name: bugsbyAi
+    build:
+      context: '../bugsby_ai'
+    image: bugsby_ai
+    ports:
+      - "5000:5000"
+    networks:
+      - bugsby_network
+
+  bugsbyWeb:
+    container_name: bugsbyWeb
+    build:
+      context: '../bugsby_web_ts'
+    image: bugsby_web
+    ports:
+      - "80:80"
+    networks:
+      - bugsby_network
+    depends_on:
+      - bugsby
+
+networks:
+  bugsby_network:
+    driver: bridge
+
+volumes:
+  postgres-data:
