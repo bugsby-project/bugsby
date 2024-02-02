@@ -16,8 +16,8 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 @Component
@@ -43,13 +43,10 @@ public class EmailServiceImpl implements EmailService {
     private Properties getProperties() {
         Properties props = new Properties();
 
-        String mailConfigPath = getClass()
+        try (InputStream inputStream = getClass()
                 .getClassLoader()
-                .getResource(MAIL_PROPERTIES_PATH)
-                .getPath();
-
-        try (FileInputStream fileInputStream = new FileInputStream(mailConfigPath)) {
-            props.load(fileInputStream);
+                .getResourceAsStream(MAIL_PROPERTIES_PATH)) {
+            props.load(inputStream);
         } catch (IOException e) {
             LOGGER.error("Error on loading mail.properties file");
             e.printStackTrace();

@@ -1,17 +1,19 @@
 package com.bugsby.datalayer.service.email;
 
 import com.bugsby.datalayer.model.PrefilledIssue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class BuildFailureEmailBodyBuilder {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BuildFailureEmailBodyBuilder.class);
     private static final String BUILD_FAILURE_EMAIL_BODY_PATH = "mail/buildFailureEmail.html";
     private static final String TITLE_PLACEHOLDER = "{{title}}";
     private static final String PREFILLED_ISSUE_LINK_PLACEHOLDER = "{{prefilledIssueLink}}";
@@ -33,16 +35,16 @@ public class BuildFailureEmailBodyBuilder {
     }
 
     private void loadBody() {
-        URL url = getClass()
+        try (InputStream inputStream = getClass()
                 .getClassLoader()
-                .getResource(BUILD_FAILURE_EMAIL_BODY_PATH);
-        if (url == null){
-            throw new IllegalArgumentException(BUILD_FAILURE_EMAIL_BODY_PATH + " not found");
-        }
-        File bodyFile = new File(url.getFile());
-        try {
-            this.body = Files.readString(bodyFile.toPath());
+                .getResourceAsStream(BUILD_FAILURE_EMAIL_BODY_PATH)) {
+            if (inputStream == null){
+                throw new IllegalArgumentException(BUILD_FAILURE_EMAIL_BODY_PATH + " not found");
+            }
+
+            this.body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
+            LOGGER.error("Error on loading buildFailureEmail.html file");
             e.printStackTrace();
         }
     }
