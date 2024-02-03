@@ -63,6 +63,8 @@ public class WorkflowRunJob {
 
     @Scheduled(fixedDelay = 3, timeUnit = TimeUnit.MINUTES)
     public void retrieveWorkflows() {
+        long start = System.currentTimeMillis();
+        LOGGER.info("Starting WorkflowRunJob");
         StreamSupport.stream(projectRepository.findAll().spliterator(), false)
                 .filter(this::projectWithGitHubActionsEnabled)
                 .map(project -> {
@@ -98,7 +100,12 @@ public class WorkflowRunJob {
                             .map(workflowRun -> this.analyseWorkflowLogs(pair.getValue0(), workflowRun))
                             .filter(Objects::nonNull)
                             .map(prefilledIssue -> this.prefilledIssueMapper(pair.getValue0(), prefilledIssue))
-                            .map(prefilledIssueRepository::save)
+                            .map(prefilledIssue -> {
+                                long startSavingPrefilledIssue = System.currentTimeMillis();
+                                PrefilledIssue prefilledIssue1 = prefilledIssueRepository.save(prefilledIssue);
+                                LOGGER.info("Saving prefilled issue took {} ms", System.currentTimeMillis() - startSavingPrefilledIssue);
+                                return prefilledIssue1;
+                            })
                             .toList();
 
                     // update workflow runs which have been verified
@@ -118,12 +125,16 @@ public class WorkflowRunJob {
                             .map(WorkflowRun::getPrefilledIssue)
                             .forEach(prefilledIssue -> {
                                 try {
+                                    long startSendingEmail = System.currentTimeMillis();
                                     emailService.sendBuildFailureEmail(prefilledIssue);
+                                    LOGGER.info("Sending email took {} ms", System.currentTimeMillis() - startSendingEmail);
                                 } catch (EmailException messagingException) {
                                     LOGGER.error("Failed to mail prefilled issue {}", prefilledIssue);
                                 }
                             });
                 });
+
+        LOGGER.info("Finished WorkflowRunJob, job took {} ms", System.currentTimeMillis() - start);
     }
 
     private boolean projectWithGitHubActionsEnabled(Project project) {
